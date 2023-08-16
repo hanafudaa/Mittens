@@ -9,6 +9,7 @@
   "author": "me",
   "license": "ISC",
   "dependencies": {
+    "discord-rpc": "^4.0.1",
     "discord.js": "^14.12.1",
     "mongoose": "^7.4.2",
     "owoifyx": "^1.0.4"

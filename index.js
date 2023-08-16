@@ -39,6 +39,28 @@ const { default: owofify } = require('owoifyx');
 
 const UserProfile = require('./schemas/UserProfile');
 const calculateLevelXp = require('./utils/calculateLevelXp');
+/*
+const DiscordRPC = require('discord-rpc');
+const RPC = new DiscordRPC.Client({ transport: 'ipc' });
+
+DiscordRPC.register(config.clientId);
+
+async function setActivity() {
+    if (!RPC) return;
+    RPC.setActivity({
+        largeImageKey: `https://tenor.com/view/goku-goku-gif-23776980`,
+        startTimestamp: Date.now(),
+    })
+}
+RPC.on('ready', async () => {
+    setActivity();
+
+    setInterval(() => {
+        setActivity();
+    }, 15 * 1000);
+});
+RPC.login({ clientId: `${config.clientId}` });
+*/
 
 const dailyAmount = 1000;
 
