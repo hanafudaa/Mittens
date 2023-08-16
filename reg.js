@@ -60,6 +60,44 @@ const commands = [
     default_member_permissions: PermissionsBitField.Flags.ManageChannels.toString(),
   },
   {
+    name: 'ban',
+    description: 'ban a member from the server',
+    default_member_permissions: PermissionsBitField.Flags.BanMembers.toString(),
+    options: [
+      {
+        name: 'user',
+        description: 'the user to ban',
+        type: ApplicationCommandOptionType.User,
+        required: true,
+      },
+      {
+        name: 'reason',
+        description: 'the reason for banning this user',
+        type: ApplicationCommandOptionType.String,
+        required: false,
+      },
+    ],
+  },
+  {
+    name: 'kick',
+    description: 'kick a member from the server',
+    default_member_permissions: PermissionsBitField.Flags.KickMembers.toString(),
+    options: [
+      {
+        name: 'user',
+        description: 'the user to kick',
+        type: ApplicationCommandOptionType.User,
+        required: true,
+      },
+      {
+        name: 'reason',
+        description: 'the reason for kicking this user',
+        type: ApplicationCommandOptionType.String,
+        required: false,
+      },
+    ],
+  },
+  {
     name: 'softban',
     description: 'bans a user, deleting their messages from the past 7 days than unbans them',
     default_member_permissions: PermissionsBitField.Flags.BanMembers.toString(),

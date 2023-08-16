@@ -297,22 +297,57 @@ client.on('interactionCreate', async (interaction) => {
         reportWH.send({ embeds: [reportEmbed] }).catch((err) => console.error(err));
     }
 
+    if (interaction.commandName === 'ban') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission **ban members**.', ephemeral: true }).catch((err) => console.error(err));
+        const user = interaction.options.get('user').user;
+        const reason = interaction.options.getString('reason');
+        const banMember = interaction.guild.members.cache.get(user.id);
+        if (!banMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
+        if (!banMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
+        if (user.id == config.clientId) return;
+        if (interaction.guild.id === config.server) {
+            if (!reason) return (await interaction.reply({ content: `You must provide a reason for ban.`, ephemeral: true }));
+            await moderationWH.send({ content: `**${banMember.user.username}** was banned by <@${interaction.member.id}>\n## reason:\n"${reason}".` }).catch((err) => console.log(err));
+        }
+        await banMember.ban({reason: `${reason}`}).then(interaction.reply({
+            content: `${banMember.user.username} was banned.`
+        })).catch((err) => console.log(err));
+    }
+
+    if (interaction.commandName === 'kick') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return interaction.reply({ content: 'I don\'t have the permission **kick members**.', ephemeral: true }).catch((err) => console.error(err));
+        const user = interaction.options.get('user').user;
+        const reason = interaction.options.getString('reason');
+        const kickMember = interaction.guild.members.cache.get(user.id);
+        if (!kickMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
+        if (!kickMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
+        if (user.id == config.clientId) return;
+        if (interaction.guild.id === config.server) {
+            if (!reason) return (await interaction.reply({ content: `You must provide a reason for kick.`, ephemeral: true }));
+            await moderationWH.send({ content: `**${kickMember.user.username}** was kicked by <@${interaction.member.id}>\n## reason:\n"${reason}".` }).catch((err) => console.log(err));
+        }
+        await kickMember.kick({reason: `${reason}`}).then(interaction.reply({
+            content: `${kickMember.user.username} was kicked.`
+        })).catch((err) => console.log(err));
+    }
+
     if (interaction.commandName === 'softban') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission **ban members**.', ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('member').user;
         const reason = interaction.options.getString('reason');
         const banMember = interaction.guild.members.cache.get(user.id);
-        if (banMember == null) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
+        if (!banMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
         if (!banMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
-        if (user.id == client.user.id) return;
+        if (user.id == config.clientId) return;
         if (interaction.guild.id === config.server) {
             if (!reason) return (await interaction.reply({ content: `You must provide a reason for softbanning.`, ephemeral: true }));
             await moderationWH.send({ content: `**${banMember.user.username}** was softbanned by <@${interaction.member.id}>\n## reason:\n"${reason}".` }).catch((err) => console.log(err));
         }
         await banMember.ban({ deleteMessageSeconds: 604800 }).then(banMember => interaction.guild.members.unban(banMember.id)).then(interaction.reply({
-            content: `${banMember.user.username} was softbanned`,
-            ephemeral: true,
+            content: `${banMember.user.username} was softbanned.`
         })).catch((err) => console.log(err));
     }
 
