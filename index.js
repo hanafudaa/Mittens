@@ -60,37 +60,6 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 
 // ------------------------------------------------------------------------------------------------------------------------
 
-client.on('presenceUpdate', async (oldPresence, newPresence) => {
-    const memberState = newPresence.member.presence.activities.find(activity => activity.state)
-    if (memberState == null) return;
-    if (memberState.state.includes('/malena')) {
-        let userProfile = await UserProfile.findOne({
-            userid: newPresence.member.id,
-        });
-
-        if (userProfile) {
-            const lastPresenceDate = userProfile.lastPresenceCollected?.toDateString();
-            const currenDate = new Date().toDateString();
-
-            if (lastPresenceDate === currenDate) {
-                console.log(`wait a day ${newPresence.member.user.username}`);
-                return;
-            }
-        } else {
-            userProfile = new UserProfile({
-                userid: interaction.member.id,
-            });
-        }
-
-        userProfile.balance += presenceAmount;
-        userProfile.lastPresenceCollected = new Date();
-
-        await userProfile.save();
-
-        console.log(`${newPresence.member.user.username} claimed +$${presenceAmount} from presence reward!`);
-    }
-});
-
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
@@ -431,13 +400,6 @@ client.on('messageCreate', async (message) => {
             }
             break;
 
-                case 'roll': // some sort of gambling command
-                    var randomRoll = Math.floor((Math.random() * 1000) + 1);
-                    console.log(randomRoll)
-                    if (randomRoll >= 1 && randomRoll <= 100) return console.log('this is the range')
-                    if (randomRoll == 1) return console.log('wow 0.1 percent chance')
-                    break;
-
         case 'rules':// rules message
             if (message.channel.type === ChannelType.DM) return;
             if (!message.member.roles.cache.has(config.flower)) return;
@@ -450,7 +412,8 @@ client.on('messageCreate', async (message) => {
             break;
 
         case 'roleofstaff':
-            if (message.author.id != config.master) return;
+            if (message.channel.type === ChannelType.DM) return;
+            if (!message.member.roles.cache.has(config.flower)) return;
             message.delete()
             const roleofstaffEmbed = new EmbedBuilder()
                 .setColor(config.color)
@@ -509,6 +472,37 @@ client.on('messageCreate', async (message) => {
             channel.send(cont).then(message.reply(`Message sent to <#${channel.id}>, message content: \`\`\`${cont}\`\`\``))
             break;
     };
+});
+
+client.on('presenceUpdate', async (oldPresence, newPresence) => {
+    const memberState = newPresence.member.presence.activities.find(activity => activity.state)
+    if (memberState == null) return;
+    if (memberState.state.includes('/malena')) {
+        let userProfile = await UserProfile.findOne({
+            userid: newPresence.member.id,
+        });
+
+        if (userProfile) {
+            const lastPresenceDate = userProfile.lastPresenceCollected?.toDateString();
+            const currenDate = new Date().toDateString();
+
+            if (lastPresenceDate === currenDate) {
+                console.log(`wait a day ${newPresence.member.user.username}`);
+                return;
+            }
+        } else {
+            userProfile = new UserProfile({
+                userid: interaction.member.id,
+            });
+        }
+
+        userProfile.balance += presenceAmount;
+        userProfile.lastPresenceCollected = new Date();
+
+        await userProfile.save();
+
+        console.log(`${newPresence.member.user.username} claimed +$${presenceAmount} from presence reward!`);
+    }
 });
 
 client.on('debug', console.log).on('warn', console.log);
