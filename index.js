@@ -32,13 +32,17 @@ const client = new Client({
     }),
 });
 
+const mongoose = require('mongoose');
+
+const config = require('./config.json');
+const { default: owofify } = require('owoifyx');
+
 const UserProfile = require('./schemas/UserProfile');
+const calculateLevelXp = require('./utils/calculateLevelXp');
 
 const dailyAmount = 1000;
 
 const presenceAmount = 25000;
-
-const calculateLevelXp = require('./utils/calculateLevelXp')
 
 const date = new Date();
 const day = date.getDate();
@@ -51,48 +55,10 @@ function getRandomXp(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-const owoify = require('owoifyx');
-const mongoose = require('mongoose');
-
-const config = require('./config.json');
-const { default: owofify } = require('owoifyx');
-
 const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1141127321588355228/lIgewq8dy5UivxOfVFsNpbYeSOu80Srr1mtS-EgZmy8cY_ky_IB3w95ExOL2hsOT4_dR' });
 
 
 // ------------------------------------------------------------------------------------------------------------------------
-
-client.on('debug', console.log).on('warn', console.log);
-
-client.on('error', async (error) => { console.log(error) });
-
-client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with certain rate information
-    const rateLimitWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1136757641322963055/cV2aSTmO4N67eXd7GebHix95q-_VfpHwDvbEw00NFCCsjwzei3bwKzjbucXnA5Dg6J9x' });
-    rateLimitWH.send({
-        content: `# rate logged\n## method\`\`\`${ratelimit.method}\`\`\`\n## url \`\`\`${ratelimit.url}\`\`\`\n## route\`\`\`${ratelimit.route}\`\`\`\n## request limit\`\`\`${ratelimit.limit}\`\`\`\n## global?\`\`\`${ratelimit.global}\`\`\`\n## reset after\`\`\`${ratelimit.timeToReset}\`\`\`\n## hash\`\`\`${ratelimit.hash}\`\`\`\n## majorParameter\`\`\`${ratelimit.majorParameter}\`\`\``
-    }).catch((err) => console.error(err));
-});
-
-client.once('ready', async () => {
-    console.log(`${client.user.username} is online`)
-    client.user.setActivity({ name: `${day}/${month}/${year}`, type: ActivityType.Watching });
-});
-
-client.on('voiceStateUpdate', async (oldState, newState) => {
-
-    if (oldState.channelId == newState.channelId) return;
-    const theChannel = newState.guild.channels.cache.find(channel => channel.name === `${oldState.member.user.displayName}'s channel`);
-    if (newState.channelId == '1138159914678755459') {
-        const myChannel = await newState.guild.channels.create({ name: `${newState.member.user.displayName}'s channel`, type: ChannelType.GuildVoice, parent: '1138159872853164212' });
-        await newState.member.voice.setChannel(myChannel).catch((err) => console.error(err));
-    };
-    if (oldState.channel == theChannel) {
-        if (theChannel == null) return;
-    };
-    if (oldState.channel.name == `${oldState.member.user.displayName}'s channel`) {
-        oldState.channel.delete().catch((err) => console.error(err));
-    };
-});
 
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state)
@@ -127,9 +93,9 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
-    await interaction.guild.autoModerationRules.fetch()
 
     if (interaction.commandName === 'automod-spam-remove') {
+        await interaction.guild.autoModerationRules.fetch()
         await interaction.deferReply();
 
         const malenaRule = interaction.guild.autoModerationRules.cache.find(AutoModerationRule => AutoModerationRule.creatorId === `${config.clientId}`);
@@ -544,6 +510,39 @@ client.on('messageCreate', async (message) => {
             break;
     };
 });
+
+client.on('debug', console.log).on('warn', console.log);
+
+client.on('error', async (error) => { console.log(error) });
+
+client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with certain rate information
+    const rateLimitWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1136757641322963055/cV2aSTmO4N67eXd7GebHix95q-_VfpHwDvbEw00NFCCsjwzei3bwKzjbucXnA5Dg6J9x' });
+    rateLimitWH.send({
+        content: `# rate logged\n## method\`\`\`${ratelimit.method}\`\`\`\n## url \`\`\`${ratelimit.url}\`\`\`\n## route\`\`\`${ratelimit.route}\`\`\`\n## request limit\`\`\`${ratelimit.limit}\`\`\`\n## global?\`\`\`${ratelimit.global}\`\`\`\n## reset after\`\`\`${ratelimit.timeToReset}\`\`\`\n## hash\`\`\`${ratelimit.hash}\`\`\`\n## majorParameter\`\`\`${ratelimit.majorParameter}\`\`\``
+    }).catch((err) => console.error(err));
+});
+
+client.once('ready', async () => {
+    console.log(`${client.user.username} is online`)
+    client.user.setActivity({ name: `${day}/${month}/${year}`, type: ActivityType.Watching });
+});
+
+client.on('voiceStateUpdate', async (oldState, newState) => {
+
+    if (oldState.channelId == newState.channelId) return;
+    const theChannel = newState.guild.channels.cache.find(channel => channel.name === `${oldState.member.user.displayName}'s channel`);
+    if (newState.channelId == '1138159914678755459') {
+        const myChannel = await newState.guild.channels.create({ name: `${newState.member.user.displayName}'s channel`, type: ChannelType.GuildVoice, parent: '1138159872853164212' });
+        await newState.member.voice.setChannel(myChannel).catch((err) => console.error(err));
+    };
+    if (oldState.channel == theChannel) {
+        if (theChannel == null) return;
+    };
+    if (oldState.channel.name == `${oldState.member.user.displayName}'s channel`) {
+        oldState.channel.delete().catch((err) => console.error(err));
+    };
+});
+
 
 (async () => {
     await mongoose.connect(config.mongoDB_URI);
