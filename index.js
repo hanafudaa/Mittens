@@ -77,6 +77,17 @@ function getRandomXp(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const { createAudioResource, createAudioPlayer, NoSubscriberBehavior, joinVoiceChannel, getVoiceConnection, entersState, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
+
+const player = createAudioPlayer({
+    behaviors: {
+        noSubscriber: NoSubscriberBehavior.Pause,
+    },
+});
+
+const inkspots = createAudioResource('./inkspots.mp3');
+
+
 const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1141127321588355228/lIgewq8dy5UivxOfVFsNpbYeSOu80Srr1mtS-EgZmy8cY_ky_IB3w95ExOL2hsOT4_dR' });
 
 
@@ -84,6 +95,10 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
+
+    if (interaction.commandName === 'color') {
+        
+    }
 
     if (interaction.commandName === 'automod-spam-remove') {
         await interaction.guild.autoModerationRules.fetch()
@@ -114,7 +129,7 @@ client.on('interactionCreate', async (interaction) => {
                     metadata: {
                         channel: interaction.channel,
                         durationSeconds: 10,
-                        customMessage: `Message was blocked by malena through auto moderation`
+                        customMessage: `Message was blocked by mittens through auto moderation`
                     }
                 }
             ]
@@ -377,9 +392,9 @@ client.on('interactionCreate', async (interaction) => {
 
 client.on('messageCreate', async (message) => {
 
-    if (message.guild == config.server) { // if message contains gg/ in my server it gets deleted unless the member has flower
+    if (message.guild == config.server) { // if message contains gg/ in my server it gets deleted unless the member has mittens
         if (message.content.includes('gg/')) {
-            if (message.member.roles.cache.has(config.flower)) return;
+            if (message.member.roles.cache.has(config.mittens)) return;
             message.delete();
         } else {
             if (message) {
@@ -450,41 +465,75 @@ client.on('messageCreate', async (message) => {
             const mhMember = (await myServer.members.fetch(person)).roles.cache.has('1138512076021714954')
             if (!mhMember) return;
             if (mhMember) {
+                if (message.channel.type !== ChannelType.DM) return message.delete();
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
-                    .setFooter({ text: 'flower only works in malena com discord server. additional flower commands and features being worked on' })
-                    .setTitle('flower menu')
-                    .setDescription(`### commands: \n\`\`\`$rules (displays rules message)\n$send <channel name> "message" (sends a message through malena bot to a certain channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in malena com`)
+                    .setFooter({ text: 'mittens only works in mittens discord server. additional mittens commands and features being worked on' })
+                    .setDescription(`# Mittens Menu\n### commands: \n\`\`\`$rules (displays rules message)\n$send <channel name> "message" (sends a message through mittens bot to a certain channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in mittens discord server`)
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
 
+        case 'stop':
+            if (!message.member.roles.cache.has('1144027829902790806')) return;
+            message.reply({ content: 'stopping inkspots' });
+            var getConnection = getVoiceConnection(message.guild.id);
+            player.stop();
+            getConnection.destroy();
+            break;
+
+        case 'ink':
+            if (!message.member.roles.cache.has('1144027829902790806')) return;
+            message.reply({ content: 'playing inkspots' });
+            const connection = joinVoiceChannel({
+                channelId: message.member.voice.channel.id,
+                guildId: message.guild.id,
+                adapterCreator: message.guild.voiceAdapterCreator,
+            });
+            var getConnection = getVoiceConnection(message.guild.id);
+            player.play(inkspots);
+
+            const subscription = getConnection.subscribe(player);
+
+            getConnection.on(VoiceConnectionStatus.Ready, () => {
+                console.log('The connection has entered the Ready state - ready to play audio!');
+            });
+
+            player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
+                console.log('Audio player is in the Playing state!');
+            });
+
+            player.on(AudioPlayerStatus.Paused, (oldState, newState) => {
+                console.log('Audio player is in the Paused state!');
+            });
+            break;
+
         case 'rules':// rules message
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.flower)) return;
+            if (!message.member.roles.cache.has(config.mittens)) return;
             message.delete();
             const termsURL = '<https://discord.com/terms>';
             const terms = hyperlink('**Terms**', termsURL);
             const guideURL = '<https://discord.com/guidelines>';
             const guide = hyperlink('**Guidelines**', guideURL);
-            message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# malena bot support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about malena.\n# Contacting Staff\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact staff quietly.\n- If you need immediate staff attention, mention <@&1138452951191539853> role instead of individual staff.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
+            message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# Mittens Bot Support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about mittens.\n# Contacting Staff\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact staff quietly.\n- If you need immediate staff attention, mention <@&1138452951191539853> role instead of individual staff.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
             break;
 
         case 'roleofstaff':
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.flower)) return;
+            if (!message.member.roles.cache.has(config.mittens)) return;
             message.delete()
             const roleofstaffEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle(`The Role of Staff`)
-                .setDescription(`- Delete any unwanted or inaproppriate messages and report it to Discord when they are agains't Community Guidelines or Terms of Service.\n- Moderate users appropriately.\n- Support with responding to questions or queries.\n- Any suspicious user activity that could effect user experience will need urgent moderation.\n- Use malena bot to issue moderation.`)
+                .setDescription(`- Delete any unwanted or inaproppriate messages and report it to Discord when they are agains't Community Guidelines or Terms of Service.\n- Moderate users appropriately.\n- Support with responding to questions or queries.\n- Any suspicious user activity that could effect user experience will need urgent moderation.\n- Use mittens bot to issue moderation.`)
                 .setFooter({ text: 'refer to #questions to channel if you have any questions' })
             message.channel.send({ embeds: [roleofstaffEmbed] });
             break;
 
         case 'message': // sends a message to the user mentioned
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.flower)) return;
+            if (!message.member.roles.cache.has(config.mittens)) return;
             const member = message.guild.members.cache.find(member => member.id === args[0]);
             const noMemberEmbed = new EmbedBuilder()
                 .setColor(config.color)
@@ -512,7 +561,7 @@ client.on('messageCreate', async (message) => {
 
         case 'send':
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.flower)) return;
+            if (!message.member.roles.cache.has(config.mittens)) return;
             const channel = message.guild.channels.cache.find(channel => channel.name === args[0]);
             const noChannelEmbed = new EmbedBuilder()
                 .setColor(config.color)
@@ -536,7 +585,7 @@ client.on('messageCreate', async (message) => {
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state)
     if (memberState == null) return;
-    if (memberState.state.includes('/malena')) {
+    if (memberState.state.includes('/mittens')) {
         let userProfile = await UserProfile.findOne({
             userid: newPresence.member.id,
         });

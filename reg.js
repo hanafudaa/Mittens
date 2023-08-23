@@ -164,6 +164,11 @@ const exclusivecommands = [
     ],
   },
   {
+    name: 'color',
+    description: 'change your color',
+    
+  },
+  {
     name: 'report-user',
     description: 'report a user to staff',
     options: [
