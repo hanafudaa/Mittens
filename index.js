@@ -43,13 +43,13 @@ const calculateLevelXp = require('./utils/calculateLevelXp');
 const DiscordRPC = require('discord-rpc');
 const RPC = new DiscordRPC.Client({ transport: 'ipc' });
 
-DiscordRPC.register(config.clientId);
+DiscordRPC.register('1142613870985363517');
 
 async function setActivity() {
     if (!RPC) return;
     RPC.setActivity({
-        largeImageKey: `https://tenor.com/view/goku-goku-gif-23776980`,
-        startTimestamp: Date.now(),
+        details: 'Kanye West',
+        largeImageKey: `i_wonder_album_cover`
     })
 }
 RPC.on('ready', async () => {
@@ -59,7 +59,7 @@ RPC.on('ready', async () => {
         setActivity();
     }, 15 * 1000);
 });
-RPC.login({ clientId: `${config.clientId}` });
+RPC.login({ clientId: `1142613870985363517` });
 */
 
 const dailyAmount = 1000;
@@ -258,8 +258,10 @@ client.on('interactionCreate', async (interaction) => {
 
             await userProfile.save();
 
+            var formattedDailyAmount = dailyAmount.toLocaleString("en-US");
+
             interaction.editReply(
-                `You claimed **$${dailyAmount}** from daily reward!`
+                `You claimed **$${formattedDailyAmount}** from daily reward!`
             )
         } catch (error) {
             console.log(`error handling /daily: ${error}`);
@@ -310,7 +312,7 @@ client.on('interactionCreate', async (interaction) => {
             if (!reason) return (await interaction.reply({ content: `You must provide a reason for ban.`, ephemeral: true }));
             await moderationWH.send({ content: `**${banMember.user.username}** was banned by <@${interaction.member.id}>\n## reason:\n"${reason}".` }).catch((err) => console.log(err));
         }
-        await banMember.ban({reason: `${reason}`}).then(interaction.reply({
+        await banMember.ban({ reason: `${reason}` }).then(interaction.reply({
             content: `${banMember.user.username} was banned.`
         })).catch((err) => console.log(err));
     }
@@ -328,7 +330,7 @@ client.on('interactionCreate', async (interaction) => {
             if (!reason) return (await interaction.reply({ content: `You must provide a reason for kick.`, ephemeral: true }));
             await moderationWH.send({ content: `**${kickMember.user.username}** was kicked by <@${interaction.member.id}>\n## reason:\n"${reason}".` }).catch((err) => console.log(err));
         }
-        await kickMember.kick({reason: `${reason}`}).then(interaction.reply({
+        await kickMember.kick({ reason: `${reason}` }).then(interaction.reply({
             content: `${kickMember.user.username} was kicked.`
         })).catch((err) => console.log(err));
     }
