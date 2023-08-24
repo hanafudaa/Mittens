@@ -1,4 +1,4 @@
-const { Client, Events, hyperlink, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection } = require('discord.js');
+const { Client, Events, hyperlink, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -94,10 +94,85 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
+
+    if (interaction.customId === 'accept') {
+        
+        await interaction.reply({ content: `Invitation accepted by ${interaction.user.displayName}`, components: []})
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName === 'color') {
-        
+    if (interaction.commandName === 'rock-paper-scissors') {
+        const amount = interaction.options.getNumber('amount');
+
+        let userProfile = await UserProfile.findOne({
+            userid: interaction.user.id,
+        });
+
+        if (!userProfile) {
+            userProfile = new UserProfile({
+                userid: interaction.user.id,
+            });
+        }
+
+        const accept = new ButtonBuilder()
+        .setCustomId('accept')
+        .setLabel('Accept')
+        .setStyle(ButtonStyle.Danger);
+
+        const rpsRow = new ActionRowBuilder()
+            .addComponents(accept);
+
+        if (amount > userProfile.balance) return interaction.editReply({ content: `You can't wager for an amount greater than your balance` });
+
+        var formattedAmount = amount.toLocaleString("en-US");
+        interaction.reply({ content: `An invitiation to play rock paper scissors with ${interaction.user.displayName} for **$${formattedAmount}**`, components: [rpsRow] });
+    }
+
+    if (interaction.commandName === 'transfer') {
+        const user = interaction.options.get('user').user;
+        const amount = interaction.options.getNumber('amount');
+
+        let userProfile = await UserProfile.findOne({
+            userid: user.id,
+        });
+
+        if (!userProfile) {
+            userProfile = new UserProfile({
+                userid: user.id,
+            });
+        }
+
+        let AuthorUser = await UserProfile.findOne({
+            userid: interaction.user.id,
+        });
+
+        if (!AuthorUser) {
+            AuthorUser = new UserProfile({
+                userid: interaction.user.id,
+            });
+        }
+
+        if (amount > AuthorUser.balance) {
+            interaction.reply({ content: `You don't have enough money to transfer this much.`, ephemeral: true });
+            return;
+        }
+
+        if (amount <= 0) return interaction.reply({ content: 'Please enter an amount greater than zero', ephemeral: true });
+
+        try {
+            AuthorUser.balance -= amount;
+            userProfile.balance += amount;
+            await AuthorUser.save();
+            await userProfile.save();
+
+            var formattedAmount = amount.toLocaleString("en-US");
+
+            return interaction.reply(`Successfully transferred **$${formattedAmount}** to ${user.displayName}`)
+
+        } catch (error) {
+            console.log('error handling /transfer command ' + error);
+        }
     }
 
     if (interaction.commandName === 'automod-spam-remove') {
@@ -184,18 +259,20 @@ client.on('interactionCreate', async (interaction) => {
 
             var formattedAmount = amount.toLocaleString("en-US");
 
-            interaction.reply(`You lost the gamble **-$${formattedAmount}**. Unlucky!`);
+            interaction.reply(`You gambled **$${formattedAmount}** and lost **$${formattedAmount}**. Unlucky!`);
             return;
         }
 
-        const amountWon = Number((amount * (Math.random() + 0.55)).toFixed(0)); // something not giving me more than i gambled for
+        const amountWon = Number((amount * (Math.random() + 1.4)).toFixed(0)); // something not giving me more than i gambled for
 
         userProfile.balance += amountWon;
         await userProfile.save();
 
+        var formattedAmount = amount.toLocaleString("en-US");
+
         var formattedAmountWon = amountWon.toLocaleString("en-US");
 
-        interaction.reply(`You won **+$${formattedAmountWon}**!`);
+        interaction.reply(`You gambled **${formattedAmount}** and won **$${formattedAmountWon}**!`);
     }
 
     if (interaction.commandName === 'balance') {
@@ -626,7 +703,7 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
-    client.user.setActivity({ name: `${day}/${month}/${year}`, type: ActivityType.Watching });
+    client.user.setActivity({ name: `${day}/${month}/${year}`, type: ActivityType.Custom });
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {

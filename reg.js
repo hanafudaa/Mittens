@@ -1,4 +1,4 @@
-const { REST, Routes, ApplicationCommandOptionType, PermissionsBitField } = require('discord.js');
+const { REST, Routes, ApplicationCommandOptionType, PermissionsBitField, ApplicationCommandOptionWithChoicesAndAutocompleteMixin } = require('discord.js');
 const config = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -29,6 +29,36 @@ const commands = [
         description: 'display users account level',
         type: ApplicationCommandOptionType.User,
         required: false,
+      },
+    ],
+  },
+  {
+    name: 'rock-paper-scissors',
+    description: 'create an invite to play rock paper scissors with another user for money',
+    options: [
+      {
+        name: 'amount',
+        description: 'amount of money you want to play for',
+        type: ApplicationCommandOptionType.Number,
+        required: true,
+      },
+    ],
+  },
+  {
+    name: 'transfer',
+    description: 'transfer money to another user',
+    options: [
+      {
+        name: 'user',
+        description: 'the user you want to transfer money to',
+        type: ApplicationCommandOptionType.User,
+        required: true,
+      },
+      {
+        name: 'amount',
+        description: 'the amount of money you want to transfer',
+        type: ApplicationCommandOptionType.Number,
+        required: true,
       },
     ],
   },
@@ -162,11 +192,6 @@ const exclusivecommands = [
 
       },
     ],
-  },
-  {
-    name: 'color',
-    description: 'change your color',
-    
   },
   {
     name: 'report-user',
