@@ -94,12 +94,6 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
-
-    if (interaction.customId === 'accept') {
-        
-        await interaction.reply({ content: `Invitation accepted by ${interaction.user.displayName}`, components: []})
-    }
-
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'rock-paper-scissors') {
