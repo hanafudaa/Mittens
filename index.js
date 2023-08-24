@@ -85,9 +85,6 @@ const player = createAudioPlayer({
     },
 });
 
-const inkspots = createAudioResource('./inkspots.mp3');
-
-
 const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1141127321588355228/lIgewq8dy5UivxOfVFsNpbYeSOu80Srr1mtS-EgZmy8cY_ky_IB3w95ExOL2hsOT4_dR' });
 
 
@@ -536,7 +533,7 @@ client.on('messageCreate', async (message) => {
             const mhMember = (await myServer.members.fetch(person)).roles.cache.has('1138512076021714954')
             if (!mhMember) return;
             if (mhMember) {
-                if (message.channel.type !== ChannelType.DM) return message.delete();
+                if (message.channel.type !== ChannelType.DM) message.delete();
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
                     .setFooter({ text: 'mittens only works in mittens discord server. additional mittens commands and features being worked on' })
@@ -556,6 +553,7 @@ client.on('messageCreate', async (message) => {
         case 'ink':
             if (!message.member.roles.cache.has('1144027829902790806')) return;
             message.reply({ content: 'playing inkspots' });
+            const inkspots = createAudioResource('./inkspots.mp3');
             const connection = joinVoiceChannel({
                 channelId: message.member.voice.channel.id,
                 guildId: message.guild.id,
@@ -574,8 +572,10 @@ client.on('messageCreate', async (message) => {
                 console.log('Audio player is in the Playing state!');
             });
 
-            player.on(AudioPlayerStatus.Paused, (oldState, newState) => {
-                console.log('Audio player is in the Paused state!');
+            player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
+                console.log('Audio player is in the idle state!');
+                player.stop();
+                getConnection.destroy();
             });
             break;
 
