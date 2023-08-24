@@ -172,16 +172,16 @@ client.on('interactionCreate', async (interaction) => {
 
         const malenaRule = interaction.guild.autoModerationRules.cache.find(AutoModerationRule => AutoModerationRule.creatorId === `${config.clientId}`);
 
-        if (!malenaRule) return interaction.editReply({ content: `Couldn't find an Automoderation rule made by malena` }).catch((err) => console.log(err));
+        if (!malenaRule) return interaction.editReply({ content: `Couldn't find an Automoderation rule made by mittens` }).catch((err) => console.log(err));
 
-        interaction.guild.autoModerationRules.delete(malenaRule).then(interaction.editReply({ content: `Automod rule spam messages made by melane has been removed` })).catch((err) => console.log(err));
+        interaction.guild.autoModerationRules.delete(malenaRule).then(interaction.editReply({ content: `Automod rule spam messages made by mittens has been removed` })).catch((err) => console.log(err));
     }
 
     if (interaction.commandName === 'automod-spam') {
         await interaction.deferReply();
 
         const rule1 = await interaction.guild.autoModerationRules.create({
-            name: 'Prevent spam messages by malena',
+            name: 'Prevent spam messages by mittens',
             creatorId: `${config.clientId}`,
             enabled: true,
             eventType: 1,
@@ -536,7 +536,7 @@ client.on('messageCreate', async (message) => {
                 if (message.channel.type !== ChannelType.DM) message.delete();
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
-                    .setFooter({ text: 'mittens only works in mittens discord server. additional mittens commands and features being worked on' })
+                    .setFooter({ text: 'Mittens commands and features only works in /mittens discord server. additional commands and features being worked on' })
                     .setDescription(`# Mittens Menu\n### commands: \n\`\`\`$rules (displays rules message)\n$send <channel name> "message" (sends a message through mittens bot to a certain channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in mittens discord server`)
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
@@ -587,19 +587,19 @@ client.on('messageCreate', async (message) => {
             const terms = hyperlink('**Terms**', termsURL);
             const guideURL = '<https://discord.com/guidelines>';
             const guide = hyperlink('**Guidelines**', guideURL);
-            message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# Mittens Bot Support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about mittens.\n# Contacting Staff\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact staff quietly.\n- If you need immediate staff attention, mention <@&1138452951191539853> role instead of individual staff.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
+            message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# Mittens Bot Support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about mittens.\n# Contacting Moderators\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact mods quietly.\n- If you need immediate moderator attention, mention <@&1138452951191539853> role instead of individual moderators.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
             break;
 
-        case 'roleofstaff':
+        case 'roleofmods':
             if (message.channel.type === ChannelType.DM) return;
             if (!message.member.roles.cache.has(config.mittens)) return;
             message.delete()
-            const roleofstaffEmbed = new EmbedBuilder()
+            const roleofmodsEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setTitle(`The Role of Staff`)
-                .setDescription(`- Delete any unwanted or inaproppriate messages and report it to Discord when they are agains't Community Guidelines or Terms of Service.\n- Moderate users appropriately.\n- Support with responding to questions or queries.\n- Any suspicious user activity that could effect user experience will need urgent moderation.\n- Use mittens bot to issue moderation.`)
+                .setTitle(`The Role of Mods`)
+                .setDescription(`- Delete any unwanted or inaproppriate messages and report it to Discord when they are agains't Community Guidelines or Terms of Service.\n- Moderate users appropriately.\n- Support with responding to questions or queries.\n- Any suspicious user activity that could effect user experience will need urgent moderation.\n- Use <@1136001498728386610> to issue moderation.`)
                 .setFooter({ text: 'refer to #questions to channel if you have any questions' })
-            message.channel.send({ embeds: [roleofstaffEmbed] });
+            message.channel.send({ embeds: [roleofmodsEmbed] });
             break;
 
         case 'message': // sends a message to the user mentioned
