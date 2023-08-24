@@ -170,11 +170,11 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.guild.autoModerationRules.fetch()
         await interaction.deferReply();
 
-        const malenaRule = interaction.guild.autoModerationRules.cache.find(AutoModerationRule => AutoModerationRule.creatorId === `${config.clientId}`);
+        const spamRule = interaction.guild.autoModerationRules.cache.find(AutoModerationRule => AutoModerationRule.creatorId === `${config.clientId}`);
 
-        if (!malenaRule) return interaction.editReply({ content: `Couldn't find an Automoderation rule made by mittens` }).catch((err) => console.log(err));
+        if (!spamRule) return interaction.editReply({ content: `Couldn't find an Automoderation rule made by mittens` }).catch((err) => console.log(err));
 
-        interaction.guild.autoModerationRules.delete(malenaRule).then(interaction.editReply({ content: `Automod rule spam messages made by mittens has been removed` })).catch((err) => console.log(err));
+        interaction.guild.autoModerationRules.delete(spamRule).then(interaction.editReply({ content: `Automod rule spam messages made by mittens has been removed` })).catch((err) => console.log(err));
     }
 
     if (interaction.commandName === 'automod-spam') {
