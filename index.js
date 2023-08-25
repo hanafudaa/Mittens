@@ -91,6 +91,18 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
+
+    const filter = i => i.customId === 'accept';
+
+    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+
+    collector.on('collect', async i => {
+        if (i.user.id !== interaction.user.id) return interaction.followUp({ content: 'You can\'t accept your own invite', ephemeral: true })
+        await i.update({ content: `**${interaction.member.displayName}** has accepted the game invite!`, components: [] });
+    });
+
+    collector.on('end', collected => console.log(`Collected ${collected.size} items`));
+
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'rock-paper-scissors') {
@@ -107,9 +119,9 @@ client.on('interactionCreate', async (interaction) => {
         }
 
         const accept = new ButtonBuilder()
-        .setCustomId('accept')
-        .setLabel('Accept')
-        .setStyle(ButtonStyle.Danger);
+            .setCustomId('accept')
+            .setLabel('Accept')
+            .setStyle(ButtonStyle.Danger);
 
         const rpsRow = new ActionRowBuilder()
             .addComponents(accept);
@@ -117,7 +129,7 @@ client.on('interactionCreate', async (interaction) => {
         if (amount > userProfile.balance) return interaction.editReply({ content: `You can't wager for an amount greater than your balance` });
 
         var formattedAmount = amount.toLocaleString("en-US");
-        interaction.reply({ content: `An invitiation to play rock paper scissors with ${interaction.user.displayName} for **$${formattedAmount}**`, components: [rpsRow] });
+        interaction.reply({ content: `**${interaction.user.displayName}** has sent an invitiation to play rock paper scissors for **$${formattedAmount}**`, components: [rpsRow] });
     }
 
     if (interaction.commandName === 'transfer') {
@@ -144,6 +156,8 @@ client.on('interactionCreate', async (interaction) => {
             });
         }
 
+        if (user.bot) return interaction.reply({ content: 'You can\'t transfer your money to a bot', ephemeral: true });
+
         if (amount > AuthorUser.balance) {
             interaction.reply({ content: `You don't have enough money to transfer this much.`, ephemeral: true });
             return;
@@ -159,7 +173,7 @@ client.on('interactionCreate', async (interaction) => {
 
             var formattedAmount = amount.toLocaleString("en-US");
 
-            return interaction.reply(`Successfully transferred **$${formattedAmount}** to ${user.displayName}`)
+            return interaction.reply(`Successfully transferred **¥${formattedAmount}** to **${user.displayName}**`)
 
         } catch (error) {
             console.log('error handling /transfer command ' + error);
@@ -223,7 +237,7 @@ client.on('interactionCreate', async (interaction) => {
         const amount = interaction.options.getNumber('amount');
 
         if (amount < 50) {
-            interaction.reply({ content: 'You must gamble atleast **$50**' });
+            interaction.reply({ content: 'You must gamble atleast **¥50**' });
             return;
         }
 
@@ -242,7 +256,7 @@ client.on('interactionCreate', async (interaction) => {
             return;
         }
 
-        const didWin = Math.random() > 0.4; // 40% chance to win
+        const didWin = Math.random() > 0.4; // 40% chance to wi
 
         if (!didWin) {
             userProfile.balance -= amount;
@@ -250,20 +264,19 @@ client.on('interactionCreate', async (interaction) => {
 
             var formattedAmount = amount.toLocaleString("en-US");
 
-            interaction.reply(`You gambled **$${formattedAmount}** and lost **$${formattedAmount}**. Unlucky!`);
+            interaction.reply(`You gambled and lost **¥${formattedAmount}**. Unlucky!`);
             return;
         }
 
-        const amountWon = Number((amount * (Math.random() + 1.4)).toFixed(0)); // something not giving me more than i gambled for
+        const amountWon = Number((amount * (Math.random() + 1.2)).toFixed(0)); // something not giving me more than i gambled for
 
         userProfile.balance += amountWon;
         await userProfile.save();
 
         var formattedAmount = amount.toLocaleString("en-US");
-
         var formattedAmountWon = amountWon.toLocaleString("en-US");
 
-        interaction.reply(`You gambled **${formattedAmount}** and won **$${formattedAmountWon}**!`);
+        interaction.reply(`You gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
     }
 
     if (interaction.commandName === 'balance') {
@@ -280,11 +293,15 @@ client.on('interactionCreate', async (interaction) => {
                 userProfile = new UserProfile({ userid: targetUserId });
             }
 
-            const balanceAmount = userProfile.balance;
+            var balanceAmount = userProfile.balance;
             var formattedBalance = balanceAmount.toLocaleString("en-US");
 
+
+        if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `${targetMember.user.displayName}'s account balance is **-¥${formattedBalance}**`})
+        if (targetMember.user.bot) return interaction.editReply({ content: 'You can\'t see a bot\'s balance'})
+
             interaction.editReply(
-                targetUserId === interaction.user.id ? `Your account balance is **$${formattedBalance}**` : `${targetMember.user.displayName}'s account balance is **$${formattedBalance}**`
+                targetUserId === interaction.user.id ? `Your account balance is **¥${formattedBalance}**` : `${targetMember.user.displayName}'s account balance is **¥${formattedBalance}**`
             )
         } catch (error) {
             console.log(`error handling /balance: ${error}`);
@@ -344,7 +361,7 @@ client.on('interactionCreate', async (interaction) => {
             var formattedDailyAmount = dailyAmount.toLocaleString("en-US");
 
             interaction.editReply(
-                `You claimed **$${formattedDailyAmount}** from daily reward!`
+                `You claimed **¥${formattedDailyAmount}** from daily reward!`
             )
         } catch (error) {
             console.log(`error handling /daily: ${error}`);
@@ -462,7 +479,7 @@ client.on('messageCreate', async (message) => {
 
     if (message.guild == config.server) { // if message contains gg/ in my server it gets deleted unless the member has mittens
         if (message.content.includes('gg/')) {
-            if (message.member.roles.cache.has(config.mittens)) return;
+            if (message.member.roles.cache.has(config.council)) return;
             message.delete();
         } else {
             if (message) {
@@ -536,8 +553,8 @@ client.on('messageCreate', async (message) => {
                 if (message.channel.type !== ChannelType.DM) message.delete();
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
-                    .setFooter({ text: 'Mittens commands and features only works in /mittens discord server. additional commands and features being worked on' })
-                    .setDescription(`# Mittens Menu\n### commands: \n\`\`\`$rules (displays rules message)\n$send <channel name> "message" (sends a message through mittens bot to a certain channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in mittens discord server`)
+                    .setFooter({ text: 'Council commands and features only work in /mittens discord server. additional commands and features being worked on' })
+                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n$roleofmods (sends role of mods embed message)\n$send <channel name> "message" (sends a message through mittens bot to a certain channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in /mittens discord server`)
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
@@ -581,7 +598,7 @@ client.on('messageCreate', async (message) => {
 
         case 'rules':// rules message
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.mittens)) return;
+            if (!message.member.roles.cache.has(config.council)) return;
             message.delete();
             const termsURL = '<https://discord.com/terms>';
             const terms = hyperlink('**Terms**', termsURL);
@@ -592,7 +609,7 @@ client.on('messageCreate', async (message) => {
 
         case 'roleofmods':
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.mittens)) return;
+            if (!message.member.roles.cache.has(config.council)) return;
             message.delete()
             const roleofmodsEmbed = new EmbedBuilder()
                 .setColor(config.color)
@@ -604,7 +621,7 @@ client.on('messageCreate', async (message) => {
 
         case 'message': // sends a message to the user mentioned
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.mittens)) return;
+            if (!message.member.roles.cache.has(config.council)) return;
             const member = message.guild.members.cache.find(member => member.id === args[0]);
             const noMemberEmbed = new EmbedBuilder()
                 .setColor(config.color)
@@ -632,7 +649,7 @@ client.on('messageCreate', async (message) => {
 
         case 'send':
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.mittens)) return;
+            if (!message.member.roles.cache.has(config.council)) return;
             const channel = message.guild.channels.cache.find(channel => channel.name === args[0]);
             const noChannelEmbed = new EmbedBuilder()
                 .setColor(config.color)
