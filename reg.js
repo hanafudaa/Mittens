@@ -33,18 +33,6 @@ const commands = [
     ],
   },
   {
-    name: 'rock-paper-scissors',
-    description: 'create an invite to play rock paper scissors with another user for money',
-    options: [
-      {
-        name: 'amount',
-        description: 'amount of money you want to play for',
-        type: ApplicationCommandOptionType.Number,
-        required: true,
-      },
-    ],
-  },
-  {
     name: 'transfer',
     description: 'transfer money to another user',
     options: [

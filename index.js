@@ -91,7 +91,7 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
-
+/*
     const filter = i => i.customId === 'accept';
 
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
@@ -102,8 +102,6 @@ client.on('interactionCreate', async (interaction) => {
     });
 
     collector.on('end', collected => console.log(`Collected ${collected.size} items`));
-
-    if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'rock-paper-scissors') {
         const amount = interaction.options.getNumber('amount');
@@ -130,7 +128,9 @@ client.on('interactionCreate', async (interaction) => {
 
         var formattedAmount = amount.toLocaleString("en-US");
         interaction.reply({ content: `**${interaction.user.displayName}** has sent an invitiation to play rock paper scissors for **$${formattedAmount}**`, components: [rpsRow] });
-    }
+    }*/
+
+    if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'transfer') {
         const user = interaction.options.get('user').user;
