@@ -1,4 +1,4 @@
-const { Client, Events, hyperlink, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent } = require('discord.js');
+const { Client, Events, hyperlink, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent, Colors } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -38,7 +38,7 @@ const config = require('./config.json');
 const { default: owofify } = require('owoifyx');
 
 const UserProfile = require('./schemas/UserProfile');
-const calculateLevelXp = require('./utils/calculateLevelXp');
+
 /*
 const DiscordRPC = require('discord-rpc');
 const RPC = new DiscordRPC.Client({ transport: 'ipc' });
@@ -70,12 +70,6 @@ const date = new Date();
 const day = date.getDate();
 const month = date.getMonth() + 1;
 const year = date.getFullYear();
-
-function getRandomXp(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 
 const { createAudioResource, createAudioPlayer, NoSubscriberBehavior, joinVoiceChannel, getVoiceConnection, entersState, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
 
@@ -133,6 +127,7 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'transfer') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('user').user;
         const amount = interaction.options.getNumber('amount');
 
@@ -181,6 +176,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'automod-spam-remove') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         await interaction.guild.autoModerationRules.fetch()
         await interaction.deferReply();
 
@@ -192,6 +188,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'automod-spam') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         await interaction.deferReply();
 
         const rule1 = await interaction.guild.autoModerationRules.create({
@@ -234,6 +231,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'gamble') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const amount = interaction.options.getNumber('amount');
 
         if (amount < 50) {
@@ -280,6 +278,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'balance') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'Can\'t use command in DMs', ephemeral: true})
         const targetUserId = interaction.options.getUser('user')?.id || interaction.user.id;
 
         const targetMember = interaction.guild.members.cache.get(targetUserId);
@@ -308,30 +307,8 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 
-    if (interaction.commandName === 'level') {
-        const targetUserId = interaction.options.getUser('user')?.id || interaction.user.id;
-
-        await interaction.deferReply();
-
-        try {
-            let userProfile = await UserProfile.findOne({ userid: targetUserId });
-
-            if (!userProfile) {
-                userProfile = new UserProfile({ userid: targetUserId });
-            }
-
-            const levelNumber = userProfile.level;
-            var formattedLevel = levelNumber.toLocaleString("en-US");
-
-            interaction.editReply(
-                targetUserId === interaction.user.id ? `Your account level is **${formattedLevel}**` : `<@${targetUserId}>'s account level is **${formattedLevel}**`
-            )
-        } catch (error) {
-            console.log(`error handling /level: ${error}`);
-        }
-    }
-
     if (interaction.commandName === 'daily') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         try {
             await interaction.deferReply();
 
@@ -369,6 +346,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'avatar') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const avataruser = interaction.options.get('user').user;
         const avatarEmbed = new EmbedBuilder()
             .setColor(config.color)
@@ -378,6 +356,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'report-message') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const msgLink = interaction.options.getString('message_link');
         const reason = interaction.options.getString('reason');
         const reportWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1139265242732429333/x9AYlXKZwZTAj5xZ9ZKTrWyVEcwXnac__cELa7vGPmalpN1Gv08g7QboKAFEvSrlJ6Sp' });
@@ -389,6 +368,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'report-user') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('user').user;
         const reason = interaction.options.getString('reason');
         const reportWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1139265242732429333/x9AYlXKZwZTAj5xZ9ZKTrWyVEcwXnac__cELa7vGPmalpN1Gv08g7QboKAFEvSrlJ6Sp' });
@@ -496,45 +476,6 @@ client.on('messageCreate', async (message) => {
     }
 
     if (message.author.bot) return; // if a bot creates a message client will return
-
-    const xpToGive = getRandomXp(5, 10);
-
-    const query = {
-        userid: message.author.id,
-    };
-
-    try {
-        const level = await UserProfile.findOne(query);
-
-        if (level) {
-            level.xp += xpToGive;
-
-            if (level.xp > calculateLevelXp(level.level)) {
-                level.xp = 0;
-                level.level += 1;
-
-                message.channel.send(`${message.author} leveled up! You are now level **${level.level}**.`);
-            }
-
-            await level.save().catch((err) => {
-                console.log(`error saving updated level ${err}`);
-                return;
-            })
-        }
-
-        // if (!level)
-        else {
-            // create new level
-            const newLevel = new UserProfile({
-                userid: message.author.id,
-                xp: xpToGive,
-            });
-
-            await newLevel.save();
-        }
-    } catch (error) {
-        console.log(`error when handling xp ${error}`);
-    }
 
     if (message.content.indexOf(config.prefix) !== 0) return; // if message does not contain prefix than return
 
@@ -714,7 +655,7 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
-    client.user.setActivity({ name: `${day}/${month}/${year}`, type: ActivityType.Custom });
+    client.user.setActivity({ name: `anything and everything all of the time`, type: ActivityType.Custom });
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {

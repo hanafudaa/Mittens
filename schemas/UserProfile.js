@@ -9,14 +9,6 @@ const userProfileSchema = new Schema({
         type: Number,
         default: 0,
     },
-    xp: {
-        type: Number,
-        default: 0,
-    },
-    level: {
-        type: Number,
-        default: 1,
-    },
     lastDailyCollected: {
         type: Date,
     },
