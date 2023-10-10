@@ -182,9 +182,9 @@ client.on('interactionCreate', async (interaction) => {
 
         const spamRule = interaction.guild.autoModerationRules.cache.find(AutoModerationRule => AutoModerationRule.creatorId === `${config.clientId}`);
 
-        if (!spamRule) return interaction.editReply({ content: `Couldn't find an Automoderation rule made by mittens` }).catch((err) => console.log(err));
+        if (!spamRule) return interaction.editReply({ content: `Couldn't find an Automoderation rule made by perk` }).catch((err) => console.log(err));
 
-        interaction.guild.autoModerationRules.delete(spamRule).then(interaction.editReply({ content: `Automod rule spam messages made by mittens has been removed` })).catch((err) => console.log(err));
+        interaction.guild.autoModerationRules.delete(spamRule).then(interaction.editReply({ content: `Automod rule spam messages made by perk has been removed` })).catch((err) => console.log(err));
     }
 
     if (interaction.commandName === 'automod-spam') {
@@ -192,7 +192,7 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.deferReply();
 
         const rule1 = await interaction.guild.autoModerationRules.create({
-            name: 'Prevent spam messages by mittens',
+            name: 'Prevent spam messages by perk',
             creatorId: `${config.clientId}`,
             enabled: true,
             eventType: 1,
@@ -206,7 +206,7 @@ client.on('interactionCreate', async (interaction) => {
                     metadata: {
                         channel: interaction.channel,
                         durationSeconds: 10,
-                        customMessage: `Message was blocked by mittens through auto moderation`
+                        customMessage: `Message was blocked by perk through auto moderation`
                     }
                 }
             ]
@@ -457,7 +457,7 @@ client.on('interactionCreate', async (interaction) => {
 
 client.on('messageCreate', async (message) => {
 
-    if (message.guild == config.server) { // if message contains gg/ in my server it gets deleted unless the member has mittens
+    if (message.guild == config.server) { // if message contains gg/ in my server it gets deleted unless the member has council
         if (message.content.includes('gg/')) {
             if (message.member.roles.cache.has(config.council)) return;
             message.delete();
@@ -494,8 +494,8 @@ client.on('messageCreate', async (message) => {
                 if (message.channel.type !== ChannelType.DM) message.delete();
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
-                    .setFooter({ text: 'Council commands and features only work in /mittens discord server. additional commands and features being worked on' })
-                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n$roleofmods (sends role of mods embed message)\n$send <channel name> "message" (sends a message through mittens bot to a certain channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in /mittens discord server`)
+                    .setFooter({ text: 'Council commands and features only work in perl discord server. additional commands and features being worked on' })
+                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n$roleofmods (sends role of mods embed message)\n$send <channel name> "message" (sends a message through perk bot to a certain channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in perl discord server`)
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
@@ -545,7 +545,7 @@ client.on('messageCreate', async (message) => {
             const terms = hyperlink('**Terms**', termsURL);
             const guideURL = '<https://discord.com/guidelines>';
             const guide = hyperlink('**Guidelines**', guideURL);
-            message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# Mittens Bot Support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about mittens.\n# Contacting Moderators\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact mods quietly.\n- If you need immediate moderator attention, mention <@&1138452951191539853> role instead of individual moderators.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
+            message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# Perk Bot Support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about perk.\n# Contacting Moderators\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact mods quietly.\n- If you need immediate moderator attention, mention <@&1138452951191539853> role instead of individual moderators.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
             break;
 
         case 'roleofmods':
@@ -614,7 +614,7 @@ client.on('messageCreate', async (message) => {
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state)
     if (memberState == null) return;
-    if (memberState.state.includes('/mittens')) {
+    if (memberState.state.includes('/perl')) {
         let userProfile = await UserProfile.findOne({
             userid: newPresence.member.id,
         });
