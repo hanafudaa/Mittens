@@ -644,6 +644,15 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
 client.on('debug', console.log).on('warn', console.log);
 
+client.on('guildMemberAdd', (member) => {
+    const whitelisted = [ '1135986663152173278', '249300259694575616' ]
+    const guildID = member.guild.id;
+    if (guildID !== config.server) return;
+    if (!whitelisted.includes(member.user.id)) {
+        member.kick();
+    }
+});
+
 client.on('error', async (error) => { console.log(error) });
 
 client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with certain rate information
