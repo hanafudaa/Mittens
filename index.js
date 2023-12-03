@@ -1,6 +1,6 @@
 const { Client, Events, hyperlink, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent, Colors } = require('discord.js');
 
-const client = new Client({
+const client = new Client({ // hello how are you kez
     intents: [
         GatewayIntentBits.AutoModerationConfiguration,
         GatewayIntentBits.AutoModerationExecution,
