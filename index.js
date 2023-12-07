@@ -255,7 +255,7 @@ client.on('interactionCreate', async (interaction) => {
             return;
         }
 
-        const didWin = Math.random() > 0.4; // 40% chance to wi
+        const didWin = Math.random() > 0.6; // 40% chance to win
 
         if (!didWin) {
             userProfile.balance -= amount;
@@ -666,7 +666,6 @@ client.on('guildAuditLogEntryCreate', (auditLogEntry, guild) => {
         content: `### Username: \`${logEntryExecuter.user.username}\`\n### User snowflake: \`${logEntryExecuter.user.id}\`\n### Action: \`${auditLogEntry.actionType} - ${auditLogEntry.targetType}\``
     })).catch((err) => console.error(err));
 });
-
 
 client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with specific rate information
     const rateLimitWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1136757641322963055/cV2aSTmO4N67eXd7GebHix95q-_VfpHwDvbEw00NFCCsjwzei3bwKzjbucXnA5Dg6J9x' });
