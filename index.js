@@ -85,44 +85,44 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
-/*
-    const filter = i => i.customId === 'accept';
-
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
-
-    collector.on('collect', async i => {
-        if (i.user.id !== interaction.user.id) return interaction.followUp({ content: 'You can\'t accept your own invite', ephemeral: true })
-        await i.update({ content: `**${interaction.member.displayName}** has accepted the game invite!`, components: [] });
-    });
-
-    collector.on('end', collected => console.log(`Collected ${collected.size} items`));
-
-    if (interaction.commandName === 'rock-paper-scissors') {
-        const amount = interaction.options.getNumber('amount');
-
-        let userProfile = await UserProfile.findOne({
-            userid: interaction.user.id,
+    /*
+        const filter = i => i.customId === 'accept';
+    
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
+    
+        collector.on('collect', async i => {
+            if (i.user.id !== interaction.user.id) return interaction.followUp({ content: 'You can\'t accept your own invite', ephemeral: true })
+            await i.update({ content: `**${interaction.member.displayName}** has accepted the game invite!`, components: [] });
         });
-
-        if (!userProfile) {
-            userProfile = new UserProfile({
+    
+        collector.on('end', collected => console.log(`Collected ${collected.size} items`));
+    
+        if (interaction.commandName === 'rock-paper-scissors') {
+            const amount = interaction.options.getNumber('amount');
+    
+            let userProfile = await UserProfile.findOne({
                 userid: interaction.user.id,
             });
-        }
-
-        const accept = new ButtonBuilder()
-            .setCustomId('accept')
-            .setLabel('Accept')
-            .setStyle(ButtonStyle.Danger);
-
-        const rpsRow = new ActionRowBuilder()
-            .addComponents(accept);
-
-        if (amount > userProfile.balance) return interaction.editReply({ content: `You can't wager for an amount greater than your balance` });
-
-        var formattedAmount = amount.toLocaleString("en-US");
-        interaction.reply({ content: `**${interaction.user.displayName}** has sent an invitiation to play rock paper scissors for **$${formattedAmount}**`, components: [rpsRow] });
-    }*/
+    
+            if (!userProfile) {
+                userProfile = new UserProfile({
+                    userid: interaction.user.id,
+                });
+            }
+    
+            const accept = new ButtonBuilder()
+                .setCustomId('accept')
+                .setLabel('Accept')
+                .setStyle(ButtonStyle.Danger);
+    
+            const rpsRow = new ActionRowBuilder()
+                .addComponents(accept);
+    
+            if (amount > userProfile.balance) return interaction.editReply({ content: `You can't wager for an amount greater than your balance` });
+    
+            var formattedAmount = amount.toLocaleString("en-US");
+            interaction.reply({ content: `**${interaction.user.displayName}** has sent an invitiation to play rock paper scissors for **$${formattedAmount}**`, components: [rpsRow] });
+        }*/
 
     if (!interaction.isChatInputCommand()) return;
 
@@ -278,7 +278,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'balance') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'Can\'t use command in DMs', ephemeral: true})
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'Can\'t use command in DMs', ephemeral: true })
         const targetUserId = interaction.options.getUser('user')?.id || interaction.user.id;
 
         const targetMember = interaction.guild.members.cache.get(targetUserId);
@@ -296,8 +296,8 @@ client.on('interactionCreate', async (interaction) => {
             var formattedBalance = balanceAmount.toLocaleString("en-US");
 
 
-        if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `${targetMember.user.displayName}'s account balance is **-¥${formattedBalance}**`})
-        if (targetMember.user.bot) return interaction.editReply({ content: 'You can\'t see a bot\'s balance'})
+            if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `${targetMember.user.displayName}'s account balance is **-¥${formattedBalance}**` })
+            if (targetMember.user.bot) return interaction.editReply({ content: 'You can\'t see a bot\'s balance' })
 
             interaction.editReply(
                 targetUserId === interaction.user.id ? `Your account balance is **¥${formattedBalance}**` : `${targetMember.user.displayName}'s account balance is **¥${formattedBalance}**`
@@ -643,8 +643,10 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 client.on('debug', console.log).on('warn', console.log);
 
 client.on('guildMemberAdd', (member) => {
-    const whitelisted = [ '1135986663152173278', '249300259694575616', '949735611286319154', '713470317070385192' ]
+    let k_kick_WH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1181747821733494854/bjycCtqi6SaLvT_WVYXDFNBoHDyomKiRMZRVD78MroxXvDLEvOJ3fdpwgGmSyh7FMNPI' });
+    const whitelisted = ['1135986663152173278', '249300259694575616', '949735611286319154', '713470317070385192']
     const guildID = member.guild.id;
+
     if (guildID !== config.server) return;
     if (!whitelisted.includes(member.user.id)) {
         member.kick();
@@ -652,6 +654,18 @@ client.on('guildMemberAdd', (member) => {
 });
 
 client.on('error', async (error) => { console.log(error) });
+
+client.on('guildAuditLogEntryCreate', (auditLogEntry, guild) => {
+    const WListed = ['1136001498728386610', '1135986663152173278']
+    const LogEntryRole = auditLogEntry.targetType == 'Role'
+    const logEntryDelete = auditLogEntry.actionType == 'Delete'
+    const logeEntryChannel = auditLogEntry.targetType == 'Channel'
+    const logEntryExecuter = guild.members.cache.get(auditLogEntry.executorId)
+
+    if (guild.id !== config.server) return;
+    if (!WListed.includes(logEntryExecuter.user.id)) return logEntryExecuter.kick();
+});
+
 
 client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with specific rate information
     const rateLimitWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1136757641322963055/cV2aSTmO4N67eXd7GebHix95q-_VfpHwDvbEw00NFCCsjwzei3bwKzjbucXnA5Dg6J9x' });
