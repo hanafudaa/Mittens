@@ -84,6 +84,17 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 const k_kick_WH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1181747821733494854/bjycCtqi6SaLvT_WVYXDFNBoHDyomKiRMZRVD78MroxXvDLEvOJ3fdpwgGmSyh7FMNPI' });
 
 // ------------------------------------------------------------------------------------------------------------------------
+/*
+const express = require('express');
+
+const app = express();
+
+app.get('/', (request, response) => {
+	return response.sendFile('index.html', { root: '.' });
+});
+
+app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));*/
+// ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
     /*
@@ -454,7 +465,6 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 // ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
 
 client.on('messageCreate', async (message) => {
 
@@ -465,11 +475,12 @@ client.on('messageCreate', async (message) => {
             message.delete();
         } else {
             if (message) {
-                if (message.author.bot) return;
-                const luckyRole = message.guild.roles.cache.get('1138557022070132807');
-                var randomRoll = Math.floor((Math.random() * 3) + 1); // 1 = 0.1% && 10 = 1% && 100 = 10%
-                if (message.content == randomRoll) return message.reply('You got the number!').then(message.react('<:ur_gem:1139986189542244383>')).then(message.member.roles.add(luckyRole.id)).catch((err) => console.error(err));
-                console.log(randomRoll)
+                if (message.channel.id == '1182325849022808097') {
+                    if (message.author.bot) return;
+                    const luckyRole = message.guild.roles.cache.get('1138557022070132807');
+                    var randomRoll = Math.floor((Math.random() * 1000) + 1); // 1 = 0.1% && 10 = 1% && 100 = 10%
+                    if (message.content == randomRoll) return message.reply('You got the number!').then(message.react('<:ur_gem:1139986189542244383>')).then(message.member.roles.add(luckyRole.id)).catch((err) => console.error(err));
+                }
             }
         }
     }
@@ -494,11 +505,11 @@ client.on('messageCreate', async (message) => {
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
                     .setFooter({ text: 'Council commands and features only work in the discord server. additional commands and features being worked on' })
-                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n$roleofmods (sends role of mods embed message)\n$send <channel name> "message" (sends a message through the bot to a specific channel)\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in the discord server`)
+                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n\n$send <channel name> "message" (sends a message through the bot to a specific channel)\n\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in the discord server.\n- Able to edit server without getting kicked.`)
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
-
+/*
         case 'stop':
             if (!message.member.roles.cache.has('1181226544878862346')) return;
             message.reply({ content: 'Stopping Inkspots' });
@@ -534,7 +545,7 @@ client.on('messageCreate', async (message) => {
                 player.stop();
                 getConnection.destroy();
             });
-            break;
+            break;*/
 
         case 'rules':// rules message
             if (message.channel.type === ChannelType.DM) return;
@@ -545,18 +556,6 @@ client.on('messageCreate', async (message) => {
             const guideURL = '<https://discord.com/guidelines>';
             const guide = hyperlink('**Guidelines**', guideURL);
             message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# Bot Support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about <@1136001498728386610>.\n# Contacting Moderators\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact mods quietly.\n- If you need immediate moderator attention, mention <@&1138452951191539853> role instead of individual moderators.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
-            break;
-
-        case 'roleofmods':
-            if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.council)) return;
-            message.delete()
-            const roleofmodsEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setTitle(`The Role of Mods`)
-                .setDescription(`- Delete any unwanted or inaproppriate messages and report it to Discord when they are agains't Community Guidelines or Terms of Service.\n- Moderate users appropriately.\n- Support with responding to questions or queries.\n- Any suspicious user activity that could effect user experience will need urgent moderation.\n- Use <@1136001498728386610> to issue moderation.`)
-                .setFooter({ text: 'refer to #questions to channel if you have any questions' })
-            message.channel.send({ embeds: [roleofmodsEmbed] });
             break;
 
         case 'message': // sends a message to the user mentioned
@@ -644,27 +643,31 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 client.on('debug', console.log).on('warn', console.log);
 
 client.on('guildMemberAdd', (member) => {
-    const whitelisted = ['1135986663152173278', '249300259694575616', '949735611286319154', '713470317070385192']
+    const whitelisted = ['1135986663152173278', '249300259694575616', '949735611286319154', '713470317070385192', '714163963667021965']
     const guildID = member.guild.id;
+    const listEmbed = new EmbedBuilder()
+    .setDescription(`### Username: \`${member.user.username}\`\n### User snowflake: \`${member.user.id}\``)
+    .setImage('https://www.thehide.be/wp-content/uploads/2018/02/purple-curly-divider.png')
 
     if (guildID !== config.server) return;
     if (!whitelisted.includes(member.user.id)) {
-        member.kick().then(k_kick_WH.send({
-            content: `# Firewall\n### Username: \`${member.user.username}\`### User snowflake: \`${member.user.id}\``
-        })).catch((err) => console.error(err));
+        member.kick().then(k_kick_WH.send({ embeds: [listEmbed] })).catch((err) => console.error(err));
     }
 });
 
 client.on('error', async (error) => { console.log(error) });
 
+client.on('')
+
 client.on('guildAuditLogEntryCreate', (auditLogEntry, guild) => {
-    const WListed = ['1136001498728386610', '1135986663152173278', '249300259694575616']
     const logEntryExecuter = guild.members.cache.get(auditLogEntry.executorId)
+    const entryEmbed = new EmbedBuilder()
+    .setDescription(`### Username: \`${logEntryExecuter.user.username}\`\n### User snowflake: \`${logEntryExecuter.user.id}\`\n### Action: \`${auditLogEntry.actionType} - ${auditLogEntry.targetType}\``)
+    .setImage('https://www.thehide.be/wp-content/uploads/2018/02/purple-curly-divider.png')
 
     if (guild.id !== config.server) return;
-    if (!WListed.includes(logEntryExecuter.user.id)) return logEntryExecuter.kick().then(k_kick_WH.send({ 
-        content: `### Username: \`${logEntryExecuter.user.username}\`\n### User snowflake: \`${logEntryExecuter.user.id}\`\n### Action: \`${auditLogEntry.actionType} - ${auditLogEntry.targetType}\``
-    })).catch((err) => console.error(err));
+    if (!logEntryExecuter.roles.cache.has(config.council)) return logEntryExecuter.kick().then(k_kick_WH.send({ embeds: [ entryEmbed ] })).catch((err) => console.error(err));
+    
 });
 
 client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with specific rate information
