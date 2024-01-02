@@ -5,6 +5,18 @@ const path = require('node:path');
 
 const commands = [
   {
+    name: 'convert',
+    description: 'convert your yen into something',
+    options: [
+      {
+        name: 'k-coins',
+        description: 'convert your yen into k-coins',
+        type: ApplicationCommandOptionType.Number,
+        required: true,
+      },
+    ],
+  },
+  {
     name: 'daily',
     description: 'collect your daily reward!',
   },

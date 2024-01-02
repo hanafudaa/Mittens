@@ -79,21 +79,22 @@ const player = createAudioPlayer({
     },
 });
 
+// IDEA: use k-coins to value permissions within the discord server like using them up on moderation permissions e.g if you server mute someone it uses up a k-coin
+
 const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1141127321588355228/lIgewq8dy5UivxOfVFsNpbYeSOu80Srr1mtS-EgZmy8cY_ky_IB3w95ExOL2hsOT4_dR' });
 
 const k_kick_WH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1181747821733494854/bjycCtqi6SaLvT_WVYXDFNBoHDyomKiRMZRVD78MroxXvDLEvOJ3fdpwgGmSyh7FMNPI' });
 
 // ------------------------------------------------------------------------------------------------------------------------
-/*
 const express = require('express');
 
 const app = express();
 
 app.get('/', (request, response) => {
-	return response.sendFile('index.html', { root: '.' });
+    return response.sendFile('index.html', { root: '.' });
 });
 
-app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));*/
+app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
@@ -137,6 +138,8 @@ client.on('interactionCreate', async (interaction) => {
         }*/
 
     if (!interaction.isChatInputCommand()) return;
+
+
 
     if (interaction.commandName === 'transfer') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
@@ -266,7 +269,7 @@ client.on('interactionCreate', async (interaction) => {
             return;
         }
 
-        const didWin = Math.random() > 0.6; // 40% chance to win
+        const didWin = Math.random() > 0.5; // 50% chance to win
 
         if (!didWin) {
             userProfile.balance -= amount;
@@ -278,7 +281,7 @@ client.on('interactionCreate', async (interaction) => {
             return;
         }
 
-        const amountWon = Number((amount * (Math.random() + 1.2)).toFixed(0)); // something not giving me more than i gambled for
+        const amountWon = Number((amount * (Math.floor(1) + 0.5)).toFixed(0));
 
         userProfile.balance += amountWon;
         await userProfile.save();
@@ -305,17 +308,52 @@ client.on('interactionCreate', async (interaction) => {
             }
 
             var balanceAmount = userProfile.balance;
+            var k_coinsAmount = userProfile.k_coins;
             var formattedBalance = balanceAmount.toLocaleString("en-US");
 
 
-            if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `${targetMember.user.displayName}'s account balance is **-¥${formattedBalance}**` })
+            if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `${targetMember.user.displayName}'s account balance is **-¥${formattedBalance}**, they also have **${k_coinsAmount}** k-coins` })
             if (targetMember.user.bot) return interaction.editReply({ content: 'You can\'t see a bot\'s balance' })
 
             interaction.editReply(
-                targetUserId === interaction.user.id ? `Your account balance is **¥${formattedBalance}**` : `${targetMember.user.displayName}'s account balance is **¥${formattedBalance}**`
+                targetUserId === interaction.user.id ? `Your account balance is **¥${formattedBalance}**, you also have **${k_coinsAmount}** k-coins` : `${targetMember.user.displayName}'s account balance is **¥${formattedBalance}**, they also have **${k_coinsAmount}** k-coins`
             )
         } catch (error) {
             console.log(`error handling /balance: ${error}`);
+        }
+    }
+
+    if (interaction.commandName === 'convert') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'Can\'t use command in DMs', ephemeral: true })
+
+        const coinsNumber = interaction.options.getNumber('k-coins');
+
+        try {
+            let userProfile = await UserProfile.findOne({ userid: interaction.member.id });
+
+            if (!userProfile) {
+                userProfile = new UserProfile({ userid: interaction.member.id });
+            }
+
+            var balanceAmount = userProfile.balance;
+
+            var k_coin_value = 1000000
+
+            var coinMath = coinsNumber * k_coin_value
+            var formattedCoins = coinMath.toLocaleString("en-US");
+            console.log(coinMath)
+
+            if (coinMath > balanceAmount) return interaction.reply({ content: `You don't have enough yen to buy this amount of k-coins` });
+
+            if (k_coin_value < balanceAmount) {
+                interaction.reply({ content: `I have given you **${coinsNumber}** k-coin, at the cost of **${formattedCoins}** yen.` }).then(userProfile.k_coins += coinsNumber).then(await userProfile.save()); // if x > 50
+                userProfile.balance -= coinMath;
+                await userProfile.save();
+            } else {
+                interaction.reply({ content: `You don't have enough yen to buy this amount of k-coins` });
+            }
+        } catch (error) {
+            console.log(`error handling /convert: ${error}`);
         }
     }
 
@@ -509,43 +547,113 @@ client.on('messageCreate', async (message) => {
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
-/*
+
         case 'stop':
-            if (!message.member.roles.cache.has('1181226544878862346')) return;
-            message.reply({ content: 'Stopping Inkspots' });
+            message.reply({ content: 'Stopping song' });
             var getConnection = getVoiceConnection(message.guild.id);
             player.stop();
             getConnection.destroy();
             break;
 
         case 'ink':
-            if (!message.member.roles.cache.has('1181226544878862346')) return;
-            message.reply({ content: 'Playing Inkspots' });
-            const inkspots = createAudioResource('./inkspots.mp3');
-            const connection = joinVoiceChannel({
-                channelId: message.member.voice.channel.id,
-                guildId: message.guild.id,
-                adapterCreator: message.guild.voiceAdapterCreator,
-            });
-            var getConnection = getVoiceConnection(message.guild.id);
-            player.play(inkspots);
+            try {
+                let userProfile = await UserProfile.findOne({ userid: message.author.id });
 
-            const subscription = getConnection.subscribe(player);
+                if (!userProfile) {
+                    userProfile = new UserProfile({ userid: message.author.id });
+                }
 
-            getConnection.on(VoiceConnectionStatus.Ready, () => {
-                console.log('The connection has entered the Ready state - ready to play audio!');
-            });
+                var k_coinAmount = userProfile.k_coins;
 
-            player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
-                console.log('Audio player is in the Playing state!');
-            });
+                if (k_coinAmount <= 0) return message.reply(`You need **1** k-coin to play this song`);
 
-            player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
-                console.log('Audio player is in the idle state!');
-                player.stop();
-                getConnection.destroy();
-            });
-            break;*/
+                userProfile.k_coins -= 1
+                await userProfile.save()
+
+                message.reply({ content: `Playing **"I Don't Want To Set The World On Fire" - THe Ink Spots**, **-1** k-coin` });
+
+                const inkspots = createAudioResource('./inkspots.mp3');
+
+                const connection = joinVoiceChannel({
+                    channelId: message.member.voice.channel.id,
+                    guildId: message.guild.id,
+                    adapterCreator: message.guild.voiceAdapterCreator,
+                });
+
+                var getConnection = getVoiceConnection(message.guild.id);
+
+                player.play(inkspots);
+
+                const subscription = getConnection.subscribe(player);
+
+                getConnection.on(VoiceConnectionStatus.Ready, () => {
+                    console.log('The connection has entered the Ready state - ready to play audio!');
+                });
+
+                player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
+                    console.log('Audio player is in the Playing state!');
+                });
+
+                player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
+                    console.log('Audio player is in the idle state!');
+                    player.stop();
+                    if (connection !== null) return getConnection.destroy();
+                });
+
+            } catch (error) {
+                console.log(`error handling $ink: ${error}`);
+            }
+            break;
+        
+        case 'wonderful':
+            try {
+                let userProfile = await UserProfile.findOne({ userid: message.author.id });
+
+                if (!userProfile) {
+                    userProfile = new UserProfile({ userid: message.author.id });
+                }
+
+                var k_coinAmount = userProfile.k_coins;
+
+                if (k_coinAmount <= 0) return message.reply(`You need **1** k-coin to play this song`);
+
+                userProfile.k_coins -= 1
+                await userProfile.save()
+
+                message.reply({ content: 'Playing **"What A Wonderful World" - Louis Armstrong**, **-1** k-coin' });
+
+                const inkspots = createAudioResource('./wonderful.mp3');
+
+                const connection = joinVoiceChannel({
+                    channelId: message.member.voice.channel.id,
+                    guildId: message.guild.id,
+                    adapterCreator: message.guild.voiceAdapterCreator,
+                });
+
+                var getConnection = getVoiceConnection(message.guild.id);
+
+                player.play(inkspots);
+
+                const subscription = getConnection.subscribe(player);
+
+                getConnection.on(VoiceConnectionStatus.Ready, () => {
+                    console.log('The connection has entered the Ready state - ready to play audio!');
+                });
+
+                player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
+                    console.log('Audio player is in the Playing state!');
+                });
+
+                player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
+                    console.log('Audio player is in the idle state!');
+                    player.stop();
+                    if (connection !== null) return getConnection.destroy();
+                });
+
+            } catch (error) {
+                console.log(`error handling $ink: ${error}`);
+            }
+            break;
 
         case 'rules':// rules message
             if (message.channel.type === ChannelType.DM) return;
@@ -643,11 +751,11 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 client.on('debug', console.log).on('warn', console.log);
 
 client.on('guildMemberAdd', (member) => {
-    const whitelisted = ['1135986663152173278', '249300259694575616', '949735611286319154', '713470317070385192', '714163963667021965']
+    const whitelisted = ['1135986663152173278', '249300259694575616', '949735611286319154', '713470317070385192', '714163963667021965', '668135274324164618']
     const guildID = member.guild.id;
     const listEmbed = new EmbedBuilder()
-    .setDescription(`### Username: \`${member.user.username}\`\n### User snowflake: \`${member.user.id}\``)
-    .setImage('https://www.thehide.be/wp-content/uploads/2018/02/purple-curly-divider.png')
+        .setDescription(`### Username: \`${member.user.username}\`\n### User snowflake: \`${member.user.id}\``)
+        .setImage('https://64.media.tumblr.com/679bce2b3a5612383335f93d1a9181d0/936d6ad7431957e9-d2/s1280x1920/bd39b60b53f4e2a601ad5439ee59927eb66be533.pnj')
 
     if (guildID !== config.server) return;
     if (!whitelisted.includes(member.user.id)) {
@@ -657,23 +765,21 @@ client.on('guildMemberAdd', (member) => {
 
 client.on('error', async (error) => { console.log(error) });
 
-client.on('')
-
 client.on('guildAuditLogEntryCreate', (auditLogEntry, guild) => {
     const logEntryExecuter = guild.members.cache.get(auditLogEntry.executorId)
     const entryEmbed = new EmbedBuilder()
-    .setDescription(`### Username: \`${logEntryExecuter.user.username}\`\n### User snowflake: \`${logEntryExecuter.user.id}\`\n### Action: \`${auditLogEntry.actionType} - ${auditLogEntry.targetType}\``)
-    .setImage('https://www.thehide.be/wp-content/uploads/2018/02/purple-curly-divider.png')
+        .setDescription(`### Username: \`${logEntryExecuter.user.username}\`\n### User snowflake: \`${logEntryExecuter.user.id}\`\n### Action: \`${auditLogEntry.actionType} - ${auditLogEntry.targetType}\``)
+        .setImage('https://64.media.tumblr.com/f55f01a5cd1075f4abaebb0cfa20f7be/2d161f92d957df1d-65/s1280x1920/228f2c79b186780e21789f945c924b94dc8e5782.pnj')
 
     if (guild.id !== config.server) return;
-    if (!logEntryExecuter.roles.cache.has(config.council)) return logEntryExecuter.kick().then(k_kick_WH.send({ embeds: [ entryEmbed ] })).catch((err) => console.error(err));
-    
+    if (!logEntryExecuter.roles.cache.has(config.council)) return logEntryExecuter.kick().then(k_kick_WH.send({ embeds: [entryEmbed] })).catch((err) => console.error(err));
+
 });
 
 client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with specific rate information
     const rateLimitWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1136757641322963055/cV2aSTmO4N67eXd7GebHix95q-_VfpHwDvbEw00NFCCsjwzei3bwKzjbucXnA5Dg6J9x' });
     rateLimitWH.send({
-        content: `# rate logged\n## method\`\`\`${ratelimit.method}\`\`\`\n## url \`\`\`${ratelimit.url}\`\`\`\n## route\`\`\`${ratelimit.route}\`\`\`\n## request limit\`\`\`${ratelimit.limit}\`\`\`\n## global?\`\`\`${ratelimit.global}\`\`\`\n## reset after\`\`\`${ratelimit.timeToReset}\`\`\`\n## hash\`\`\`${ratelimit.hash}\`\`\`\n## majorParameter\`\`\`${ratelimit.majorParameter}\`\`\``
+        content: `\n### method: \`${ratelimit.method}\`\n### url: \`${ratelimit.url}\`\n### route: \`${ratelimit.route}\`\n### request limit: \`${ratelimit.limit}\`\n### global?: \`${ratelimit.global}\`\n### reset after: \`${ratelimit.timeToReset}\`\n### hash: \`${ratelimit.hash}\`\n### majorParameter: \`${ratelimit.majorParameter}\``
     }).catch((err) => console.error(err));
 });
 
