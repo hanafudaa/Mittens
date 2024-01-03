@@ -183,7 +183,7 @@ client.on('interactionCreate', async (interaction) => {
 
             var formattedAmount = amount.toLocaleString("en-US");
 
-            return interaction.reply(`Successfully transferred **¥${formattedAmount}** to **${user.displayName}**`)
+            return interaction.reply(`# TRANSFER\nSuccessfully transferred **¥${formattedAmount}** to **${user.displayName}**`)
 
         } catch (error) {
             console.log('error handling /transfer command ' + error);
@@ -277,7 +277,7 @@ client.on('interactionCreate', async (interaction) => {
 
             var formattedAmount = amount.toLocaleString("en-US");
 
-            interaction.reply(`You gambled and lost **¥${formattedAmount}**. Unlucky!`);
+            interaction.reply(`# GAMBLE\nYou gambled and lost **¥${formattedAmount}**. Unlucky!`);
             return;
         }
 
@@ -289,7 +289,7 @@ client.on('interactionCreate', async (interaction) => {
         var formattedAmount = amount.toLocaleString("en-US");
         var formattedAmountWon = amountWon.toLocaleString("en-US");
 
-        interaction.reply(`You gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
+        interaction.reply(`# GAMBLE\nYou gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
     }
 
     if (interaction.commandName === 'balance') {
@@ -341,12 +341,11 @@ client.on('interactionCreate', async (interaction) => {
 
             var coinMath = coinsNumber * k_coin_value
             var formattedCoins = coinMath.toLocaleString("en-US");
-            console.log(coinMath)
 
             if (coinMath > balanceAmount) return interaction.reply({ content: `You don't have enough yen to buy this amount of k-coins` });
 
             if (k_coin_value < balanceAmount) {
-                interaction.reply({ content: `I have given you **${coinsNumber}** k-coin, at the cost of **${formattedCoins}** yen.` }).then(userProfile.k_coins += coinsNumber).then(await userProfile.save()); // if x > 50
+                interaction.reply({ content: `# CONVERT\nI have given you **${coinsNumber}** k-coin, at the cost of **${formattedCoins}** yen.` }).then(userProfile.k_coins += coinsNumber).then(await userProfile.save()); // if x > 50
                 userProfile.balance -= coinMath;
                 await userProfile.save();
             } else {
@@ -507,10 +506,9 @@ client.on('interactionCreate', async (interaction) => {
 client.on('messageCreate', async (message) => {
 
     if (message.guild == config.server) { // if message contains gg/ in my server it gets deleted unless the member has council
-        if (message.content.includes('gg/')) {
+        if (message.content.includes('.gif')) {
             if (message.member.roles.cache.has(config.council)) return;
-            message.channel.send(`${message.author} shut up`)
-            message.delete();
+            message.channel.send(`${message.author} shut up`).then(message.delete());
         } else {
             if (message) {
                 if (message.channel.id == '1182325849022808097') {
@@ -520,7 +518,7 @@ client.on('messageCreate', async (message) => {
                     if (message.content == randomRoll) return message.reply('You got the number!').then(message.react('<:ur_gem:1139986189542244383>')).then(message.member.roles.add(luckyRole.id)).catch((err) => console.error(err));
                 }
             }
-        }
+    }   
     }
 
     if (message.author.bot) return; // if a bot creates a message client will return
@@ -548,110 +546,16 @@ client.on('messageCreate', async (message) => {
             }
             break;
 
-        case 'stop':
-            message.reply({ content: 'Stopping song' });
-            var getConnection = getVoiceConnection(message.guild.id);
-            player.stop();
-            getConnection.destroy();
-            break;
-
-        case 'ink':
+        case 'flock':
+            if (message.guild.id !== config.server) return;
+            if (!message.member.roles.cache.has(config.council)) return;
+            message.delete();
             try {
-                let userProfile = await UserProfile.findOne({ userid: message.author.id });
-
-                if (!userProfile) {
-                    userProfile = new UserProfile({ userid: message.author.id });
-                }
-
-                var k_coinAmount = userProfile.k_coins;
-
-                if (k_coinAmount <= 0) return message.reply(`You need **1** k-coin to play this song`);
-
-                userProfile.k_coins -= 1
-                await userProfile.save()
-
-                message.reply({ content: `Playing **"I Don't Want To Set The World On Fire" - THe Ink Spots**, **-1** k-coin` });
-
-                const inkspots = createAudioResource('./inkspots.mp3');
-
-                const connection = joinVoiceChannel({
-                    channelId: message.member.voice.channel.id,
-                    guildId: message.guild.id,
-                    adapterCreator: message.guild.voiceAdapterCreator,
-                });
-
-                var getConnection = getVoiceConnection(message.guild.id);
-
-                player.play(inkspots);
-
-                const subscription = getConnection.subscribe(player);
-
-                getConnection.on(VoiceConnectionStatus.Ready, () => {
-                    console.log('The connection has entered the Ready state - ready to play audio!');
-                });
-
-                player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
-                    console.log('Audio player is in the Playing state!');
-                });
-
-                player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
-                    console.log('Audio player is in the idle state!');
-                    player.stop();
-                    if (connection !== null) return getConnection.destroy();
-                });
-
+                const flockChannel = message.guild.channels.cache.get('1191884152593711214');
+                message.guild.members.cache.forEach(member => console.log(member.voice.member.user.username))
+                await message.guild.members.fetch().then(message.guild.members.cache.filter(member => member.voice !== null).forEach(member => member.voice.setChannel(flockChannel).catch((err) => console.error(err))))
             } catch (error) {
-                console.log(`error handling $ink: ${error}`);
-            }
-            break;
-        
-        case 'wonderful':
-            try {
-                let userProfile = await UserProfile.findOne({ userid: message.author.id });
-
-                if (!userProfile) {
-                    userProfile = new UserProfile({ userid: message.author.id });
-                }
-
-                var k_coinAmount = userProfile.k_coins;
-
-                if (k_coinAmount <= 0) return message.reply(`You need **1** k-coin to play this song`);
-
-                userProfile.k_coins -= 1
-                await userProfile.save()
-
-                message.reply({ content: 'Playing **"What A Wonderful World" - Louis Armstrong**, **-1** k-coin' });
-
-                const inkspots = createAudioResource('./wonderful.mp3');
-
-                const connection = joinVoiceChannel({
-                    channelId: message.member.voice.channel.id,
-                    guildId: message.guild.id,
-                    adapterCreator: message.guild.voiceAdapterCreator,
-                });
-
-                var getConnection = getVoiceConnection(message.guild.id);
-
-                player.play(inkspots);
-
-                const subscription = getConnection.subscribe(player);
-
-                getConnection.on(VoiceConnectionStatus.Ready, () => {
-                    console.log('The connection has entered the Ready state - ready to play audio!');
-                });
-
-                player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
-                    console.log('Audio player is in the Playing state!');
-                });
-
-                player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
-                    console.log('Audio player is in the idle state!');
-                    player.stop();
-                    if (connection !== null) return getConnection.destroy();
-                });
-
-            } catch (error) {
-                console.log(`error handling $ink: ${error}`);
+                console.log(`error handling $flock: ${error}`)
             }
             break;
 
