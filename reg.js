@@ -33,18 +33,6 @@ const commands = [
     ],
   },
   {
-    name: 'level',
-    description: 'displays your account level',
-    options: [
-      {
-        name: 'user',
-        description: 'display users account level',
-        type: ApplicationCommandOptionType.User,
-        required: false,
-      },
-    ],
-  },
-  {
     name: 'transfer',
     description: 'transfer money to another user',
     options: [
