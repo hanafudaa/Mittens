@@ -39,29 +39,6 @@ const { default: owofify } = require('owoifyx');
 
 const UserProfile = require('./schemas/UserProfile');
 
-/*
-const DiscordRPC = require('discord-rpc');
-const RPC = new DiscordRPC.Client({ transport: 'ipc' });
-
-DiscordRPC.register('1142613870985363517');
-
-async function setActivity() {
-    if (!RPC) return;
-    RPC.setActivity({
-        details: 'Kanye West',
-        largeImageKey: `i_wonder_album_cover`
-    })
-}
-RPC.on('ready', async () => {
-    setActivity();
-
-    setInterval(() => {
-        setActivity();
-    }, 15 * 1000);
-});
-RPC.login({ clientId: `1142613870985363517` });
-*/
-
 const dailyAmount = 1000;
 
 const presenceAmount = 25000;
@@ -139,7 +116,57 @@ client.on('interactionCreate', async (interaction) => {
 
     if (!interaction.isChatInputCommand()) return;
 
+    if (interaction.commandName === 'play') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
+        const file = interaction.options.getAttachment('file');
 
+        let userProfile = await UserProfile.findOne({
+            userid: interaction.member.id
+        });
+
+        if (!userProfile) {
+            userProfile = new UserProfile({ userid: interaction.member.id });
+        }
+
+        var k_coinAmount = userProfile.k_coins;
+
+        if (k_coinAmount <= 0) return interaction.reply(`You need **1** k-coin to play a song`);
+
+        userProfile.k_coins -= 1
+        await userProfile.save()
+
+        interaction.reply({ content: `Playing **${file.name}**, **-1** k-coin` });
+
+        const inkspots = createAudioResource(`${file.proxyURL}`);
+
+        const connection = joinVoiceChannel({
+            channelId: interaction.member.voice.channel.id,
+            guildId: interaction.guild.id,
+            adapterCreator: interaction.guild.voiceAdapterCreator,
+        });
+
+        var getConnection = getVoiceConnection(interaction.guild.id);
+
+        player.play(inkspots);
+
+        const subscription = getConnection.subscribe(player);
+
+        getConnection.on(VoiceConnectionStatus.Ready, () => {
+            console.log('The connection has entered the Ready state - ready to play audio!');
+        });
+
+        player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
+            console.log('Audio player is in the Playing state!');
+        });
+
+        player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
+            console.log('Audio player is in the idle state!');
+            player.stop();
+            if (connection !== null) return getConnection.destroy();
+        });
+
+
+    }
 
     if (interaction.commandName === 'transfer') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
@@ -518,7 +545,7 @@ client.on('messageCreate', async (message) => {
                     if (message.content == randomRoll) return message.reply('You got the number!').then(message.react('<:ur_gem:1139986189542244383>')).then(message.member.roles.add(luckyRole.id)).catch((err) => console.error(err));
                 }
             }
-    }   
+        }
     }
 
     if (message.author.bot) return; // if a bot creates a message client will return
@@ -546,17 +573,11 @@ client.on('messageCreate', async (message) => {
             }
             break;
 
-        case 'flock':
-            if (message.guild.id !== config.server) return;
-            if (!message.member.roles.cache.has(config.council)) return;
-            message.delete();
-            try {
-                const flockChannel = message.guild.channels.cache.get('1191884152593711214');
-                message.guild.members.cache.forEach(member => console.log(member.voice.member.user.username))
-                await message.guild.members.fetch().then(message.guild.members.cache.filter(member => member.voice !== null).forEach(member => member.voice.setChannel(flockChannel).catch((err) => console.error(err))))
-            } catch (error) {
-                console.log(`error handling $flock: ${error}`)
-            }
+        case 'stop':
+            message.reply({ content: 'Stopping song' });
+            var getConnection = getVoiceConnection(message.guild.id);
+            player.stop();
+            getConnection.destroy();
             break;
 
         case 'rules':// rules message

@@ -55,3 +55,26 @@
                 console.log(`error handling $ink: ${error}`);
             }
             break;
+
+
+
+const DiscordRPC = require('discord-rpc');
+const RPC = new DiscordRPC.Client({ transport: 'ipc' });
+
+DiscordRPC.register('1142613870985363517');
+
+async function setActivity() {
+    if (!RPC) return;
+    RPC.setActivity({
+        details: 'Kanye West',
+        largeImageKey: `i_wonder_album_cover`
+    })
+}
+RPC.on('ready', async () => {
+    setActivity();
+
+    setInterval(() => {
+        setActivity();
+    }, 15 * 1000);
+});
+RPC.login({ clientId: `1142613870985363517` });

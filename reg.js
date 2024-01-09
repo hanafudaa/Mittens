@@ -5,6 +5,18 @@ const path = require('node:path');
 
 const commands = [
   {
+    name: 'play',
+    description: 'play an audio file in your voice channel',
+    options: [
+      {
+        name: 'file',
+        description: 'upload a file to play',
+        type: ApplicationCommandOptionType.Attachment,
+        required: true,
+      },
+    ],
+  },
+  {
     name: 'convert',
     description: 'convert your yen into something',
     options: [
