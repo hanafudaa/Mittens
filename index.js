@@ -48,7 +48,7 @@ const day = date.getDate();
 const month = date.getMonth() + 1;
 const year = date.getFullYear();
 
-const { createAudioResource, createAudioPlayer, NoSubscriberBehavior, joinVoiceChannel, getVoiceConnection, entersState, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
+const { createAudioResource, createAudioPlayer, NoSubscriberBehavior, joinVoiceChannel, getVoiceConnection, entersState, AudioPlayerStatus, VoiceConnectionStatus, AudioPlayer } = require('@discordjs/voice');
 
 const player = createAudioPlayer({
     behaviors: {
@@ -75,97 +75,101 @@ app.listen(config.port, () => console.log(`App listening at http://localhost:${c
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
-    /*
-        const filter = i => i.customId === 'accept';
-    
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 15000 });
-    
-        collector.on('collect', async i => {
-            if (i.user.id !== interaction.user.id) return interaction.followUp({ content: 'You can\'t accept your own invite', ephemeral: true })
-            await i.update({ content: `**${interaction.member.displayName}** has accepted the game invite!`, components: [] });
-        });
-    
-        collector.on('end', collected => console.log(`Collected ${collected.size} items`));
-    
-        if (interaction.commandName === 'rock-paper-scissors') {
-            const amount = interaction.options.getNumber('amount');
-    
-            let userProfile = await UserProfile.findOne({
-                userid: interaction.user.id,
-            });
-    
-            if (!userProfile) {
-                userProfile = new UserProfile({
-                    userid: interaction.user.id,
-                });
-            }
-    
-            const accept = new ButtonBuilder()
-                .setCustomId('accept')
-                .setLabel('Accept')
-                .setStyle(ButtonStyle.Danger);
-    
-            const rpsRow = new ActionRowBuilder()
-                .addComponents(accept);
-    
-            if (amount > userProfile.balance) return interaction.editReply({ content: `You can't wager for an amount greater than your balance` });
-    
-            var formattedAmount = amount.toLocaleString("en-US");
-            interaction.reply({ content: `**${interaction.user.displayName}** has sent an invitiation to play rock paper scissors for **$${formattedAmount}**`, components: [rpsRow] });
-        }*/
+
+    if (interaction.commandName === "Report message") {
+        const msg = interaction.channel.messages.cache.get(interaction.targetMessage.id)
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
+        if (msg.member.user.id == client.user.id) return interaction.reply({ content: `You cannot report me.`, ephemeral: true }).catch((err) => console.error(err));
+        if (msg.member.user.id == interaction.member.id) return interaction.reply({ content: `You cannot report yourself.`, ephemeral: true }).catch((err) => console.error(err));
+        try {
+            const reportWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1139265242732429333/x9AYlXKZwZTAj5xZ9ZKTrWyVEcwXnac__cELa7vGPmalpN1Gv08g7QboKAFEvSrlJ6Sp' });
+            const reportEmbed = new EmbedBuilder()
+                .setColor(config.color)
+                .addFields(
+                    { name: 'Reporter', value: `${interaction.member.user.username}`, inline: true },
+                    { name: 'Message link', value: `${msg.url}`, inline: true },
+                    { name: 'Reported user', value: `**${msg.member.user.username}** ||${msg.member.user.id}||`, inline: true },
+                    { name: 'Message content', value: `\`\`\`${msg.content}\`\`\``, inline: false })
+            reportWH.send({ embeds: [reportEmbed] }).catch((err) => console.error(err));
+            interaction.reply({ content: `Report has been sent to moderation team.`, ephemeral: true });
+        } catch (error) {
+            console.log(`error handling "Report message" Message App Command ${error}`)
+        }
+    }
+
+    if (interaction.commandName === "uwuify") {
+        const msg = interaction.channel.messages.cache.get(interaction.targetMessage.id)
+        const text = msg.content
+        const owoified = owofify(`${text}`)
+        interaction.reply(owoified).catch((err) => console.error(err));
+    }
 
     if (!interaction.isChatInputCommand()) return;
+
+    if (interaction.commandName === 'stop') {
+        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
+        try {
+            interaction.reply({ content: 'Stopping the song from playing.' });
+            var getConnection = getVoiceConnection(interaction.guild.id);
+            player.stop();
+            getConnection.destroy();
+        } catch (error) {
+            console.log(`error handling /stop command ${error}`)
+        }
+    }
 
     if (interaction.commandName === 'play') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const file = interaction.options.getAttachment('file');
 
-        let userProfile = await UserProfile.findOne({
-            userid: interaction.member.id
-        });
+        try {
+            let userProfile = await UserProfile.findOne({
+                userid: interaction.member.id
+            });
 
-        if (!userProfile) {
-            userProfile = new UserProfile({ userid: interaction.member.id });
+            if (!userProfile) {
+                userProfile = new UserProfile({ userid: interaction.member.id });
+            }
+
+            var k_coinAmount = userProfile.k_coins;
+
+            if (k_coinAmount <= 0) return interaction.reply(`You need **1** k-coin to play a song`);
+
+            userProfile.k_coins -= 1
+            await userProfile.save()
+
+            interaction.reply({ content: `Playing **${file.name}**, **-1** k-coin` });
+
+            const fileURL = createAudioResource(`${file.proxyURL}`);
+
+            const connection = joinVoiceChannel({
+                channelId: interaction.member.voice.channel.id,
+                guildId: interaction.guild.id,
+                adapterCreator: interaction.guild.voiceAdapterCreator,
+            });
+
+            var getConnection = getVoiceConnection(interaction.guild.id);
+
+            player.play(fileURL);
+
+            const subscription = getConnection.subscribe(player);
+
+            getConnection.on(VoiceConnectionStatus.Ready, () => {
+                console.log('The connection has entered the Ready state - ready to play audio!');
+            });
+
+            player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
+                console.log('Audio player is in the Playing state!');
+            });
+
+            player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
+                console.log('Audio player is in the idle state!');
+                player.stop();
+                if (connection !== null) return getConnection.destroy();
+            });
+        } catch (error) {
+            console.log(`error handling /play command ${error}`)
         }
-
-        var k_coinAmount = userProfile.k_coins;
-
-        if (k_coinAmount <= 0) return interaction.reply(`You need **1** k-coin to play a song`);
-
-        userProfile.k_coins -= 1
-        await userProfile.save()
-
-        interaction.reply({ content: `Playing **${file.name}**, **-1** k-coin` });
-
-        const inkspots = createAudioResource(`${file.proxyURL}`);
-
-        const connection = joinVoiceChannel({
-            channelId: interaction.member.voice.channel.id,
-            guildId: interaction.guild.id,
-            adapterCreator: interaction.guild.voiceAdapterCreator,
-        });
-
-        var getConnection = getVoiceConnection(interaction.guild.id);
-
-        player.play(inkspots);
-
-        const subscription = getConnection.subscribe(player);
-
-        getConnection.on(VoiceConnectionStatus.Ready, () => {
-            console.log('The connection has entered the Ready state - ready to play audio!');
-        });
-
-        player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
-            console.log('Audio player is in the Playing state!');
-        });
-
-        player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
-            console.log('Audio player is in the idle state!');
-            player.stop();
-            if (connection !== null) return getConnection.destroy();
-        });
-
-
     }
 
     if (interaction.commandName === 'transfer') {
@@ -215,55 +219,6 @@ client.on('interactionCreate', async (interaction) => {
         } catch (error) {
             console.log('error handling /transfer command ' + error);
         }
-    }
-
-    if (interaction.commandName === 'automod-spam-remove') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        await interaction.guild.autoModerationRules.fetch()
-        await interaction.deferReply();
-
-        const spamRule = interaction.guild.autoModerationRules.cache.find(AutoModerationRule => AutoModerationRule.creatorId === `${config.clientId}`);
-
-        if (!spamRule) return interaction.editReply({ content: `Couldn't find an Automoderation rule made by kuromi` }).catch((err) => console.log(err));
-
-        interaction.guild.autoModerationRules.delete(spamRule).then(interaction.editReply({ content: `Automod rule spam messages made by kuromi has been removed` })).catch((err) => console.log(err));
-    }
-
-    if (interaction.commandName === 'automod-spam') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        await interaction.deferReply();
-
-        const rule1 = await interaction.guild.autoModerationRules.create({
-            name: 'Prevent spam messages by kuromi',
-            creatorId: `${config.clientId}`,
-            enabled: true,
-            eventType: 1,
-            triggerType: 3,
-            triggerMetadata: {
-                mentionTotalLimit: 3
-            },
-            actions: [
-                {
-                    type: 1,
-                    metadata: {
-                        channel: interaction.channel,
-                        durationSeconds: 10,
-                        customMessage: `Message was blocked by kuromi through auto moderation`
-                    }
-                }
-            ]
-        }).catch(async err => {
-            setTimeout(async () => {
-                console.log(err);
-                await interaction.editReply({ content: `${err}` });
-            }, 2000);
-        })
-
-        setTimeout(async () => {
-            if (!rule1) return;
-
-            await interaction.editReply({ content: `Automod rule has been created. All spam messages will now be deleted` });
-        }, 3000);
     }
 
     if (interaction.commandName === 'owoify') {
@@ -431,30 +386,6 @@ client.on('interactionCreate', async (interaction) => {
         interaction.reply({ embeds: [avatarEmbed] }).catch((err) => console.error(err));
     }
 
-    if (interaction.commandName === 'report-message') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        const msgLink = interaction.options.getString('message_link');
-        const reason = interaction.options.getString('reason');
-        const reportWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1139265242732429333/x9AYlXKZwZTAj5xZ9ZKTrWyVEcwXnac__cELa7vGPmalpN1Gv08g7QboKAFEvSrlJ6Sp' });
-        const reportEmbed = new EmbedBuilder()
-            .setColor(config.color)
-            .setDescription(`## <@&1138452951191539853>\n### reporter: \n${interaction.member.user.displayName} ||${interaction.member.user.id}||\n### message link:\n${msgLink}\n### reason:\n"${reason}"`)
-        await interaction.reply({ content: 'Report sent.', ephemeral: true }).catch((err) => console.error(err));
-        reportWH.send({ embeds: [reportEmbed] }).catch((err) => console.error(err));
-    }
-
-    if (interaction.commandName === 'report-user') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        const user = interaction.options.get('user').user;
-        const reason = interaction.options.getString('reason');
-        const reportWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1139265242732429333/x9AYlXKZwZTAj5xZ9ZKTrWyVEcwXnac__cELa7vGPmalpN1Gv08g7QboKAFEvSrlJ6Sp' });
-        const reportEmbed = new EmbedBuilder()
-            .setColor(config.color)
-            .setDescription(`## <@&1138452951191539853>\n### reporter: \n${interaction.member.user.displayName} ||${interaction.member.user.id}||\n### reported user:\n${user.username} ||${user.id}||\n### reason:\n"${reason}"`)
-        await interaction.reply({ content: 'Report sent.', ephemeral: true }).catch((err) => console.error(err));
-        reportWH.send({ embeds: [reportEmbed] }).catch((err) => console.error(err));
-    }
-
     if (interaction.commandName === 'ban') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission **ban members**.', ephemeral: true }).catch((err) => console.error(err));
@@ -528,27 +459,50 @@ client.on('interactionCreate', async (interaction) => {
     };
 });
 
+
+
+
 // ------------------------------------------------------------------------------------------------------------------------
+
+
+
 
 client.on('messageCreate', async (message) => {
 
-    if (message.guild == config.server) { // if message contains gg/ in my server it gets deleted unless the member has council
-        if (message.content.includes('.gif')) {
-            if (message.member.roles.cache.has(config.council)) return;
-            message.channel.send(`${message.author} shut up`).then(message.delete());
+    if (message.author.bot) return; // if a bot creates a message client will return
+
+    const myChannel = client.channels.cache.get('1194375819708084335')
+    const tfmeChannel = client.channels.cache.get('1194375834727886848')
+    if (message.channel.id == myChannel) {
+        tfmeChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
+        let fetchedMessages = await message.channel.messages.fetch();
+        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to tfme's server."));
+
+        if (stickyMessage) {
+            stickyMessage.delete().then(() => {
+                message.channel.send("### Messages sent here are sent to tfme's server.");
+
+            }).catch(() => { });
         } else {
-            if (message) {
-                if (message.channel.id == '1182325849022808097') {
-                    if (message.author.bot) return;
-                    const luckyRole = message.guild.roles.cache.get('1138557022070132807');
-                    var randomRoll = Math.floor((Math.random() * 1000) + 1); // 1 = 0.1% && 10 = 1% && 100 = 10%
-                    if (message.content == randomRoll) return message.reply('You got the number!').then(message.react('<:ur_gem:1139986189542244383>')).then(message.member.roles.add(luckyRole.id)).catch((err) => console.error(err));
-                }
-            }
+            // Force send a new message.
+            message.channel.send("### Messages sent here are sent to tfme's server.");
         }
     }
+    if (message.channel.id == tfmeChannel) {
+        myChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
+        let fetchedMessages = await message.channel.messages.fetch();
+        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to hanafuda's server."));
 
-    if (message.author.bot) return; // if a bot creates a message client will return
+        if (stickyMessage) {
+            stickyMessage.delete().then(() => {
+                message.channel.send("### Messages sent here are sent to hanafuda's server.");
+
+            }).catch(() => { });
+        } else {
+            // Force send a new message.
+            message.channel.send("### Messages sent here are sent to hanafuda's server.");
+        }
+    }
 
     if (message.content.indexOf(config.prefix) !== 0) return; // if message does not contain prefix than return
 
@@ -556,6 +510,14 @@ client.on('messageCreate', async (message) => {
     const command = args.shift().toLowerCase(); // tolowercase meaning $PING will work / array becomes arg1, arg2, arg3
 
     switch (command) {
+
+        case 'call':
+            if (message.channel.id == '1166836212028428338') {
+                message.delete();
+                const hanafuda = message.guild.members.cache.get(config.master);
+                hanafuda.send(`||${message.author.id}|| ${message.author.username} is trying to get into the server.`);
+            }
+            break;
 
         case 'menu':
             const myServer = client.guilds.cache.get(config.server);
@@ -568,16 +530,9 @@ client.on('messageCreate', async (message) => {
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
                     .setFooter({ text: 'Council commands and features only work in the discord server. additional commands and features being worked on' })
-                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n\n$send <channel name> "message" (sends a message through the bot to a specific channel)\n\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to post invite links in the discord server.\n- Able to edit server without getting kicked.`)
+                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n\n$send <channel name> "message" (sends a message through the bot to a specific channel)\n\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to create invite links.\n- Able to edit server without getting kicked.`)
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
-            break;
-
-        case 'stop':
-            message.reply({ content: 'Stopping song' });
-            var getConnection = getVoiceConnection(message.guild.id);
-            player.stop();
-            getConnection.destroy();
             break;
 
         case 'rules':// rules message

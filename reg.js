@@ -5,6 +5,10 @@ const path = require('node:path');
 
 const commands = [
   {
+    name: 'stop',
+    description: 'stop the audio player from playing.',
+  },
+  {
     name: 'play',
     description: 'play an audio file in your voice channel',
     options: [
@@ -73,16 +77,6 @@ const commands = [
         required: true,
       },
     ],
-  },
-  {
-    name: 'automod-spam',
-    description: 'set-up malena\s automod rule spam messages',
-    default_member_permissions: PermissionsBitField.Flags.Administrator.toString(),
-  },
-  {
-    name: 'automod-spam-remove',
-    description: 'removes malena\'s automod rule for spam messages',
-    default_member_permissions: PermissionsBitField.Flags.Administrator.toString(),
   },
   {
     name: 'nuke',
@@ -175,41 +169,12 @@ const commands = [
 
 const exclusivecommands = [
   {
-    name: 'report-message',
-    description: 'report a message to staff',
-    options: [
-      {
-        name: 'message_link',
-        description: 'message link to the message',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-      },
-      {
-        name: 'reason',
-        description: 'reason for the report',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-
-      },
-    ],
+    name: 'Report message',
+    type: 3
   },
   {
-    name: 'report-user',
-    description: 'report a user to staff',
-    options: [
-      {
-        name: 'user',
-        description: 'user to report',
-        type: ApplicationCommandOptionType.User,
-        required: true,
-      },
-      {
-        name: 'reason',
-        description: 'reason for the report',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-      },
-    ],
+    name: 'uwuify',
+    type: 3
   },
   {
     name: 'owoify',
