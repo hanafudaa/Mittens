@@ -2,6 +2,7 @@ const { REST, Routes, ApplicationCommandOptionType, PermissionsBitField, Applica
 const config = require('./config.json');
 const fs = require('node:fs');
 const path = require('node:path');
+const { application } = require('express');
 
 const commands = [
   {
@@ -10,11 +11,11 @@ const commands = [
   },
   {
     name: 'play',
-    description: 'play an audio file in your voice channel',
+    description: 'play an audio file in your voice channel.',
     options: [
       {
         name: 'file',
-        description: 'upload a file to play',
+        description: 'upload a file to play.',
         type: ApplicationCommandOptionType.Attachment,
         required: true,
       },
