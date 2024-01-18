@@ -69,3 +69,37 @@ RPC.on('ready', async () => {
     }, 15 * 1000);
 });
 RPC.login({ clientId: `1142613870985363517` });
+
+
+    const myChannel = client.channels.cache.get('1194375819708084335')
+    const tfmeChannel = client.channels.cache.get('1194375834727886848')
+    if (message.channel.id == myChannel) {
+        tfmeChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
+        let fetchedMessages = await message.channel.messages.fetch();
+        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to tfme's server."));
+
+        if (stickyMessage) {
+            stickyMessage.delete().then(() => {
+                message.channel.send("### Messages sent here are sent to tfme's server.");
+
+            }).catch(() => { });
+        } else {
+            // Force send a new message.
+            message.channel.send("### Messages sent here are sent to tfme's server.");
+        }
+    }
+    if (message.channel.id == tfmeChannel) {
+        myChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
+        let fetchedMessages = await message.channel.messages.fetch();
+        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to hanafuda's server."));
+
+        if (stickyMessage) {
+            stickyMessage.delete().then(() => {
+                message.channel.send("### Messages sent here are sent to hanafuda's server.");
+
+            }).catch(() => { });
+        } else {
+            // Force send a new message.
+            message.channel.send("### Messages sent here are sent to hanafuda's server.");
+        }
+    }

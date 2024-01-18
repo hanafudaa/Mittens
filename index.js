@@ -1,4 +1,4 @@
-const { Client, Events, hyperlink, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent, Colors, DMChannel } = require('discord.js');
+const { Client, Events, hyperlink, ReactionEmoji, ReactionCollector, ReactionManager, ReactionUserManager, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent, Colors, DMChannel, MessageReaction } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -20,11 +20,14 @@ const client = new Client({
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildWebhooks,
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
     ],
     partials: [
         Partials.Channel,
-        Partials.Message
+        Partials.Message,
+        Partials.Reaction,
+        Partials.GuildMember,
+        Partials.User
     ],
     makeCache: Options.cacheWithLimits({
         DMMessageManager: 200,
@@ -41,7 +44,7 @@ const UserProfile = require('./schemas/UserProfile');
 
 const dailyAmount = 1000;
 
-const presenceAmount = 25000;
+const presenceAmount = 1000000000;
 
 const date = new Date();
 const day = date.getDate();
@@ -55,8 +58,6 @@ const player = createAudioPlayer({
         noSubscriber: NoSubscriberBehavior.Pause,
     },
 });
-
-// IDEA: use k-coins to value permissions within the discord server like using them up on moderation permissions e.g if you server mute someone it uses up a k-coin
 
 const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1141127321588355228/lIgewq8dy5UivxOfVFsNpbYeSOu80Srr1mtS-EgZmy8cY_ky_IB3w95ExOL2hsOT4_dR' });
 
@@ -72,6 +73,7 @@ app.get('/', (request, response) => {
 });
 
 app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));
+
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
@@ -133,12 +135,12 @@ client.on('interactionCreate', async (interaction) => {
 
             var k_coinAmount = userProfile.k_coins;
 
-            if (k_coinAmount <= 0) return interaction.reply(`You need **1** k-coin to play a song`);
+            if (k_coinAmount <= 0) return interaction.reply(`You need **1** coin to play a song`);
 
             userProfile.k_coins -= 1
             await userProfile.save()
 
-            interaction.reply({ content: `Playing **${file.name}**, **-1** k-coin` });
+            interaction.reply({ content: `Playing **${file.name}**, **-1** coin` });
 
             const fileURL = createAudioResource(`${file.proxyURL}`);
 
@@ -294,11 +296,11 @@ client.on('interactionCreate', async (interaction) => {
             var formattedBalance = balanceAmount.toLocaleString("en-US");
 
 
-            if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `${targetMember.user.displayName}'s account balance is **-¥${formattedBalance}**, they also have **${k_coinsAmount}** k-coins` })
+            if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `${targetMember.user.displayName}'s account balance is **-¥${formattedBalance}**, they also have **${k_coinsAmount}** coins` })
             if (targetMember.user.bot) return interaction.editReply({ content: 'You can\'t see a bot\'s balance' })
 
             interaction.editReply(
-                targetUserId === interaction.user.id ? `Your account balance is **¥${formattedBalance}**, you also have **${k_coinsAmount}** k-coins` : `${targetMember.user.displayName}'s account balance is **¥${formattedBalance}**, they also have **${k_coinsAmount}** k-coins`
+                targetUserId === interaction.user.id ? `Your account balance is **¥${formattedBalance}**, you also have **${k_coinsAmount}** coins` : `${targetMember.user.displayName}'s account balance is **¥${formattedBalance}**, they also have **${k_coinsAmount}** coins`
             )
         } catch (error) {
             console.log(`error handling /balance: ${error}`);
@@ -308,7 +310,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'convert') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'Can\'t use command in DMs', ephemeral: true })
 
-        const coinsNumber = interaction.options.getNumber('k-coins');
+        const coinsNumber = interaction.options.getNumber('coins');
 
         try {
             let userProfile = await UserProfile.findOne({ userid: interaction.member.id });
@@ -324,14 +326,14 @@ client.on('interactionCreate', async (interaction) => {
             var coinMath = coinsNumber * k_coin_value
             var formattedCoins = coinMath.toLocaleString("en-US");
 
-            if (coinMath > balanceAmount) return interaction.reply({ content: `You don't have enough yen to buy this amount of k-coins` });
+            if (coinMath > balanceAmount) return interaction.reply({ content: `You don't have enough yen to buy this amount of coins` });
 
             if (k_coin_value < balanceAmount) {
-                interaction.reply({ content: `# CONVERT\nI have given you **${coinsNumber}** k-coin, at the cost of **${formattedCoins}** yen.` }).then(userProfile.k_coins += coinsNumber).then(await userProfile.save()); // if x > 50
+                interaction.reply({ content: `# CONVERT\nI have given you **${coinsNumber}** coin, at the cost of **${formattedCoins}** yen.` }).then(userProfile.k_coins += coinsNumber).then(await userProfile.save()); // if x > 50
                 userProfile.balance -= coinMath;
                 await userProfile.save();
             } else {
-                interaction.reply({ content: `You don't have enough yen to buy this amount of k-coins` });
+                interaction.reply({ content: `You don't have enough yen to buy this amount of coins` });
             }
         } catch (error) {
             console.log(`error handling /convert: ${error}`);
@@ -460,49 +462,12 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 
-
-
 // ------------------------------------------------------------------------------------------------------------------------
-
-
 
 
 client.on('messageCreate', async (message) => {
 
     if (message.author.bot) return; // if a bot creates a message client will return
-
-    const myChannel = client.channels.cache.get('1194375819708084335')
-    const tfmeChannel = client.channels.cache.get('1194375834727886848')
-    if (message.channel.id == myChannel) {
-        tfmeChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
-        let fetchedMessages = await message.channel.messages.fetch();
-        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to tfme's server."));
-
-        if (stickyMessage) {
-            stickyMessage.delete().then(() => {
-                message.channel.send("### Messages sent here are sent to tfme's server.");
-
-            }).catch(() => { });
-        } else {
-            // Force send a new message.
-            message.channel.send("### Messages sent here are sent to tfme's server.");
-        }
-    }
-    if (message.channel.id == tfmeChannel) {
-        myChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
-        let fetchedMessages = await message.channel.messages.fetch();
-        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to hanafuda's server."));
-
-        if (stickyMessage) {
-            stickyMessage.delete().then(() => {
-                message.channel.send("### Messages sent here are sent to hanafuda's server.");
-
-            }).catch(() => { });
-        } else {
-            // Force send a new message.
-            message.channel.send("### Messages sent here are sent to hanafuda's server.");
-        }
-    }
 
     if (message.content.indexOf(config.prefix) !== 0) return; // if message does not contain prefix than return
 
@@ -510,7 +475,27 @@ client.on('messageCreate', async (message) => {
     const command = args.shift().toLowerCase(); // tolowercase meaning $PING will work / array becomes arg1, arg2, arg3
 
     switch (command) {
-        
+
+        case 'move':
+            if (message.guild.id !== config.server) return;
+            if (message.channel.type === ChannelType.DM) return;
+            if (!message.member.roles.cache.has(config.council)) return;
+            message.delete();
+            const userr = message.guild.members.cache.find(member => member.id === args[0]);
+            const channell = message.guild.channels.cache.find(channel => channel.name === args[1]);
+            const noArgsEmbed = new EmbedBuilder()
+                .setColor(config.color)
+                .setTitle(`Correct command usage:`)
+                .setDescription(`\`\`\`$move "user id" "channel name"\`\`\``)
+                .setFooter({ text: `Please make sure you're entering the args correctly.` })
+            if (!userr || !channell) return message.reply({ embeds: [noArgsEmbed] });
+            if (userr.bot) return message.reply('I can\'t move bots.');
+            if (userr.voice.channelId == null) return message.reply(`User is not connected to a voice channel.`)
+            if (channell.type == ChannelType.GuildVoice) {
+                userr.voice.setChannel(channell)
+            }
+            break;
+
         case 'call':
             if (message.channel.id == '1166836212028428338') {
                 message.delete();
@@ -523,30 +508,26 @@ client.on('messageCreate', async (message) => {
             const myServer = client.guilds.cache.get(config.server);
             const person = `${message.author.id}`;
             if (!myServer.members.cache.get(person)) return;
-            const mhMember = (await myServer.members.fetch(person)).roles.cache.has('1138512076021714954')
+            const mhMember = (await myServer.members.fetch(person)).roles.cache.has(config.council)
             if (!mhMember) return;
             if (mhMember) {
                 if (message.channel.type !== ChannelType.DM) message.delete();
                 const menuEmbed = new EmbedBuilder()
                     .setColor(config.color)
-                    .setFooter({ text: 'Council commands and features only work in the discord server. additional commands and features being worked on' })
-                    .setDescription(`# Council Menu\n### commands: \n\`\`\`$rules (sends rules message)\n\n$send <channel name> "message" (sends a message through the bot to a specific channel)\n\n$message <user id> "message" (sends a message to a member through direct message)\`\`\`\n### features: \n- Allowed to create invite links.\n- Able to edit server without getting kicked.`)
+                    .setTitle('Council Commands and Features')
+                    .setDescription(`### features: \n- Allowed to create invite links.\n- Able to edit server without getting kicked.`)
+                    .addFields(
+                        { name: '$send', value: `Args: \`$send "channel name" "message"\`\n*(sends a message through the bot to a specific channel)*`, inline: true },
+                        { name: '$message', value: `Args: \`$message "userId" "message"\`\n*(sends a direct message through the bot to a specific user)*`, inline: true },
+                        { name: '$move', value: `Args: \`$move "userId" "channel name"\`\n*(moves a user who is already in a voice channel into another one)*`, inline: true },
+                    )
+                    .setFooter({ text: 'Add the word "devil" in your status to get 1 billion a day (anyone can use this if they know about it).' })
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
 
-        case 'rules':// rules message
-            if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.council)) return;
-            message.delete();
-            const termsURL = '<https://discord.com/terms>';
-            const terms = hyperlink('**Terms**', termsURL);
-            const guideURL = '<https://discord.com/guidelines>';
-            const guide = hyperlink('**Guidelines**', guideURL);
-            message.channel.send(`# Server Rules\n## 1. Behave\n- No spam, advertising, NSFW content.\n- Try not to talk about controversal topics.\n- Take drama elsewhere.\n- Be mindful and be kind.\n## 2. Please keep chat in English\n# Bot Support\n- You can find <#1139257049155391589> and <#1136703763760021514> if you have an inquiry about <@1136001498728386610>.\n# Contacting Moderators\nYou can use </report-user:1139322106069393468> and </report-message:1139319218165272618> to contact mods quietly.\n- If you need immediate moderator attention, mention <@&1138452951191539853> role instead of individual moderators.\n- Creating false reports may lead to moderation actions against you.\n# Follow Discord ${terms} and ${guide}`);
-            break;
-
         case 'message': // sends a message to the user mentioned
+            if (message.guild.id !== config.server) return;
             if (message.channel.type === ChannelType.DM) return;
             if (!message.member.roles.cache.has(config.council)) return;
             const member = message.guild.members.cache.find(member => member.id === args[0]);
@@ -561,27 +542,28 @@ client.on('messageCreate', async (message) => {
             const noTextEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle(`Correct command usage:`)
-                .setDescription(`\`\`\`$message <user id> "message"\`\`\``)
+                .setDescription(`\`\`\`$message "user id" "message"\`\`\``)
                 .setFooter({ text: `there is no message arg` })
             if (!text) return message.reply({ embeds: [noTextEmbed] });
             if (member.bot) return message.reply('I can\'t send direct messages to bots.')
             const textIncludesMember = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle('Correct command usage:')
-                .setDescription(`\`\`\`$message <user id> "message"\`\`\``)
+                .setDescription(`\`\`\`$message "user id" "message"\`\`\``)
                 .setFooter({ text: `make sure you aren't typing the users id within the message arg` })
             if (text.includes(member)) return message.reply({ embeds: [textIncludesMember] }).catch((err) => console.error(err))
             member.send(text).then(message.reply(`Message sent to ${member}, message content:\n\`\`\`${text}\`\`\``)).catch((err) => console.error('error when sending message to user ' + err));
             break;
 
         case 'send':
+            if (message.guild.id !== config.server) return;
             if (message.channel.type === ChannelType.DM) return;
             if (!message.member.roles.cache.has(config.council)) return;
             const channel = message.guild.channels.cache.find(channel => channel.name === args[0]);
             const noChannelEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle(`Correct command usage:`)
-                .setDescription(`\`\`\`$send <channel name> "message"\`\`\``)
+                .setDescription(`\`\`\`$send "channel name" "message"\`\`\``)
                 .setFooter({ text: `"${args[0]}" is not a recognised channel name` })
             if (!channel) return message.reply({ embeds: [noChannelEmbed] });
             args.shift();
@@ -589,7 +571,7 @@ client.on('messageCreate', async (message) => {
             const noContEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle(`Correct command usage:`)
-                .setDescription(`\`\`\`$send <channel name> "message"\`\`\``)
+                .setDescription(`\`\`\`$send "channel name" "message"\`\`\``)
                 .setFooter({ text: `there is no message arg` })
             if (!cont) return message.reply({ embeds: [noContEmbed] }).catch((err) => console.error(err));
             channel.send(cont).then(message.reply(`Message sent to <#${channel.id}>, message content: \`\`\`${cont}\`\`\``))
@@ -600,7 +582,7 @@ client.on('messageCreate', async (message) => {
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state)
     if (memberState == null) return;
-    if (memberState.state.includes('kuromi')) {
+    if (memberState.state.includes('devil')) {
         let userProfile = await UserProfile.findOne({
             userid: newPresence.member.id,
         });
@@ -631,11 +613,11 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 client.on('debug', console.log).on('warn', console.log);
 
 client.on('guildMemberAdd', (member) => {
-    const whitelisted = ['1135986663152173278', '249300259694575616', '949735611286319154', '713470317070385192', '714163963667021965', '668135274324164618']
+    const whitelisted = ['1135986663152173278', '249300259694575616']
     const guildID = member.guild.id;
     const listEmbed = new EmbedBuilder()
         .setDescription(`### Username: \`${member.user.username}\`\n### User snowflake: \`${member.user.id}\``)
-        .setImage('https://64.media.tumblr.com/679bce2b3a5612383335f93d1a9181d0/936d6ad7431957e9-d2/s1280x1920/bd39b60b53f4e2a601ad5439ee59927eb66be533.pnj')
+        .setImage('https://64.media.tumblr.com/d0885ed447a155854af6648892a2fb6d/9b7ddb5905533fa5-9e/s1280x1920/6d052dddb2453a19738270bdc5088496ca1d9846.jpg')
 
     if (guildID !== config.server) return;
     if (!whitelisted.includes(member.user.id)) {
@@ -649,7 +631,7 @@ client.on('guildAuditLogEntryCreate', (auditLogEntry, guild) => {
     const logEntryExecuter = guild.members.cache.get(auditLogEntry.executorId)
     const entryEmbed = new EmbedBuilder()
         .setDescription(`### Username: \`${logEntryExecuter.user.username}\`\n### User snowflake: \`${logEntryExecuter.user.id}\`\n### Action: \`${auditLogEntry.actionType} - ${auditLogEntry.targetType}\``)
-        .setImage('https://64.media.tumblr.com/f55f01a5cd1075f4abaebb0cfa20f7be/2d161f92d957df1d-65/s1280x1920/228f2c79b186780e21789f945c924b94dc8e5782.pnj')
+        .setImage('https://64.media.tumblr.com/d0885ed447a155854af6648892a2fb6d/9b7ddb5905533fa5-9e/s1280x1920/6d052dddb2453a19738270bdc5088496ca1d9846.jpg')
 
     if (guild.id !== config.server) return;
     if (!logEntryExecuter.roles.cache.has(config.council)) return logEntryExecuter.kick().then(k_kick_WH.send({ embeds: [entryEmbed] })).catch((err) => console.error(err));
@@ -665,12 +647,12 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
-    client.user.setActivity({ name: `dumb bitch`, type: ActivityType.Custom });
+    client.user.setActivity({ name: `devil`, type: ActivityType.Custom });
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-
-    if (oldState.channelId == newState.channelId) return;
+    if (newState.channelId == null) return;
+    if (oldState.channelId == newState.channelId) return; // if the user makes any voice update return
     const theChannel = newState.guild.channels.cache.find(channel => channel.name === `${oldState.member.user.displayName}'s channel`);
     if (newState.channelId == '1138159914678755459') {
         const myChannel = await newState.guild.channels.create({ name: `${newState.member.user.displayName}'s channel`, type: ChannelType.GuildVoice, parent: '1138159872853164212' });
