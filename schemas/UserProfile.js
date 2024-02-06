@@ -15,10 +15,6 @@ const userProfileSchema = new Schema({
     lastPresenceCollected: {
         type: Date,
     },
-    k_coins: {
-        type: Number,
-        default: 0,
-    },
 },
     { timestamps: true }
 );

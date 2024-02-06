@@ -26,8 +26,8 @@ const commands = [
     description: 'convert your yen into something',
     options: [
       {
-        name: 'k-coins',
-        description: 'convert your yen into k-coins',
+        name: 'coins',
+        description: 'convert your yen into coins',
         type: ApplicationCommandOptionType.Number,
         required: true,
       },
