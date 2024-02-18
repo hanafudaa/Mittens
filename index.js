@@ -74,6 +74,8 @@ app.get('/', (request, response) => {
 
 app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));
 
+// make a message reaction that edits the message when the user reacts and edits the message to something like "war going on in @users lobby" and ping and delete message
+
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
@@ -464,6 +466,23 @@ client.on('interactionCreate', async (interaction) => {
 
 // ------------------------------------------------------------------------------------------------------------------------
 
+client.on("messageReactionAdd", async (messageReaction, User) => {
+    const notiRole = messageReaction.message.guild.roles.cache.get("1208173219819814912")
+    const memberToRole = messageReaction.message.guild.members.cache.get(User.id)
+
+    if (messageReaction.message.id !== "1208183611212431390") return;
+    if (messageReaction.emoji.name == "🎴") {
+        messageReaction.users.remove(memberToRole.id);
+        if (!memberToRole.roles.cache.has(notiRole.id)) {
+            memberToRole.roles.add(notiRole.id).then(memberToRole.send('I gave you the "War Notification" role.')).catch((err) => console.log(err));
+        } else {
+            memberToRole.roles.remove(notiRole.id).then(memberToRole.send('I removed your "War Notification" role.')).catch((err) => console.log(err));
+        }
+    }
+});
+
+// ------------------------------------------------------------------------------------------------------------------------
+
 client.on('messageCreate', async (message) => {
 
     if (message.author.bot) return; // if a bot creates a message client will return
@@ -475,12 +494,52 @@ client.on('messageCreate', async (message) => {
 
     switch (command) {
 
+        case 'war':
+            if (message.guild.id !== config.server) return;
+            message.react('🌺')
+            let role = message.guild.roles.cache.find(r => r.name === "War Notification");
+            if (message.member.nickname) {
+                role.members.forEach(member => member.send(`A war is going on! Alert sent from ${message.member.nickname}.`).catch((err) => console.log(err)))
+            } else {
+                role.members.forEach(member => member.send(`A war is going on! Alert sent from ${message.member.displayName}.`).catch((err) => console.log(err)))
+            }
+            break;
+
+        case 'welcome':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const welcomeEmbed = new EmbedBuilder()
+                .setColor(config.color)
+                .setTitle('Welcome to Polyphia')
+                .setDescription('- <#1202324130259808307>')
+                .setImage('https://media1.tenor.com/m/cKDNmPxVN0gAAAAC/demon-slayer-rengoku.gif')
+            message.channel.send({ embeds: [welcomeEmbed] });
+            break;
+
+        case 'footer':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const footerEmbed = new EmbedBuilder()
+                .setColor(config.color)
+                .setFooter({ text: 'Members can challenge any of the twelve kizuki to a 1v1 in order to claim their rank.' })
+            message.channel.send({ embeds: [footerEmbed] });
+            break;
+
         case 'upper':
             if (message.author.id !== config.master) return;
             message.delete();
             const upperEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setDescription(`## <@&1196136343328264382>\n### 1 <@944655950260879371>\n### 2 <@753951863342104669>\n### 3 <@738441186100117585>\n### 4 <@358332965517787137>\n### 5 none\n### 6 none`)
+                .setImage('https://media1.tenor.com/m/iHXIzCUw8HAAAAAC/akaza-kokushibo.gif')
+                .addFields(
+                    { name: 'Upper 1', value: `<@818948986374193193>`, inline: true },
+                    { name: 'Upper 2', value: `<@944655950260879371>`, inline: true },
+                    { name: 'Upper 3', value: `<@1071452294450774118>`, inline: true },
+                    { name: 'Upper 4', value: `<@753951863342104669>`, inline: true },
+                    { name: 'Upper 5', value: `none`, inline: true },
+                    { name: 'Upper 6', value: `none`, inline: true },
+                )
+                .setDescription('## <@&1196136343328264382>')
             message.channel.send({ embeds: [upperEmbed] });
             break;
 
@@ -489,10 +548,18 @@ client.on('messageCreate', async (message) => {
             message.delete();
             const lowerEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setDescription(`## <@&1203154889413365790>\n### 1 <@1202336522922377297>\n### 2 <@249300259694575616>\n### 3 <@713470317070385192>\n### 4 none\n### 5 none\n### 5 none`)
+                .setImage('https://media1.tenor.com/m/KwNbxtAZ7rwAAAAC/kimetsu-no-yaiba-mugen-train.gif')
+                .addFields(
+                    { name: 'Lower 1', value: `none`, inline: true },
+                    { name: 'Lower 2', value: `none`, inline: true },
+                    { name: 'Lower 3', value: `none`, inline: true },
+                    { name: 'Lower 4', value: `none`, inline: true },
+                    { name: 'Lower 5', value: `none`, inline: true },
+                    { name: 'Lower 6', value: `none`, inline: true },
+                )
+                .setDescription(`## <@&1203154889413365790>`)
             message.channel.send({ embeds: [lowerEmbed] });
             break;
-
 
         case 'lock':
             if (message.guild.id !== config.server) return;
@@ -547,7 +614,7 @@ client.on('messageCreate', async (message) => {
                         { name: '$move', value: `Args: \`$move "user mention" "channel name"\`\n*(moves a user who is already in a voice channel into another one)*`, inline: true },
                         { name: '$lock', value: `*(locks a voice channel so no one else can join it, using the comand again will unlock it)*`, inline: true },
                     )
-                    .setFooter({ text: 'Add the word "ethereal" in your status to get 1 billion a day (anyone can use this if they know about it).' })
+                    .setFooter({ text: 'Add the word "Polyphia" in your status to get 1 billion a day (anyone can use this if they know about it).' })
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
@@ -608,7 +675,7 @@ client.on('messageCreate', async (message) => {
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state)
     if (memberState == null) return;
-    if (memberState.state.includes('ethereal')) {
+    if (memberState.state.includes('Polyphia')) {
         let userProfile = await UserProfile.findOne({
             userid: newPresence.member.id,
         });
@@ -663,7 +730,7 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
-    client.user.setActivity({ name: `Ethereal`, type: ActivityType.Watching });
+    client.user.setActivity({ name: `Polyphia`, type: ActivityType.Watching });
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
