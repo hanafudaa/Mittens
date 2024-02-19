@@ -536,8 +536,8 @@ client.on('messageCreate', async (message) => {
                     { name: 'Upper 2', value: `<@944655950260879371>`, inline: true },
                     { name: 'Upper 3', value: `<@1071452294450774118>`, inline: true },
                     { name: 'Upper 4', value: `<@753951863342104669>`, inline: true },
-                    { name: 'Upper 5', value: `none`, inline: true },
-                    { name: 'Upper 6', value: `none`, inline: true },
+                    { name: 'Upper 5', value: `<@358332965517787137>`, inline: true },
+                    { name: 'Upper 6', value: `<@249300259694575616>`, inline: true },
                 )
                 .setDescription('## <@&1196136343328264382>')
             message.channel.send({ embeds: [upperEmbed] });
