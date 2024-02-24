@@ -22,18 +22,6 @@ const commands = [
     ],
   },
   {
-    name: 'convert',
-    description: 'convert your yen into something',
-    options: [
-      {
-        name: 'coins',
-        description: 'convert your yen into coins',
-        type: ApplicationCommandOptionType.Number,
-        required: true,
-      },
-    ],
-  },
-  {
     name: 'daily',
     description: 'collect your daily reward!',
   },
