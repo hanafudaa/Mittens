@@ -61,9 +61,9 @@ const player = createAudioPlayer({
 
 const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1141127321588355228/lIgewq8dy5UivxOfVFsNpbYeSOu80Srr1mtS-EgZmy8cY_ky_IB3w95ExOL2hsOT4_dR' });
 
-const k_kick_WH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1181747821733494854/bjycCtqi6SaLvT_WVYXDFNBoHDyomKiRMZRVD78MroxXvDLEvOJ3fdpwgGmSyh7FMNPI' });
+const enter_exit_wh = new WebhookClient({ url: 'https://discord.com/api/webhooks/1211661132075634738/QXXt0vjCz55YSqW3KGcjXE5c9gaWMEVQDUQfY85HVZk1v1Izpmlxz5hgAU5iH2mRvqvF' });
 
-const appliers_wh = new WebhookClient({ url: 'https://discord.com/api/webhooks/1210587594358792253/xAkJCsgJfQM4qByUTagzy7R43m9Asl7-aMcXEME2zFdwwGbaPUYbp8xQF-o0E9MdBWsV' });
+const messageLogWh = new WebhookClient({ url: 'https://discord.com/api/webhooks/1212510144500338789/Dr5x8jyfpcBmRiXMpW7y2sf4ukOS46NgjM8xa-YT1gtPXK9tzXEEFnDystXnTsZKsN_r' });
 
 // ------------------------------------------------------------------------------------------------------------------------
 const express = require('express');
@@ -467,30 +467,75 @@ client.on('interactionCreate', async (interaction) => {
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on("messageReactionAdd", async (messageReaction, User) => {
-    const notiRole = messageReaction.message.guild.roles.cache.get("1208173219819814912")
-    const thisMember = messageReaction.message.guild.members.cache.get(User.id)
+    const ruleChannel = messageReaction.message.guild.channels.cache.get('1212002654616555540');
+    const memberRole = messageReaction.message.guild.roles.cache.get('1211647374196351047');
+    const guildMember = messageReaction.message.guild.members.cache.get(User.id);
+    const tryouterRole = messageReaction.message.guild.roles.cache.get('1211632162328289302');
+    const pkRole = messageReaction.message.guild.roles.cache.get('1212767763328663682');
 
-    if (messageReaction.message.id == "1209140106502606928") {
-        messageReaction.users.remove(thisMember.id);
-        if (!thisMember.roles.cache.has(notiRole.id)) {
-            thisMember.roles.add(notiRole.id).then(thisMember.send('I gave you the "War Notification" role.')).catch((err) => console.log(err));
-        } else {
-            thisMember.roles.remove(notiRole.id).then(thisMember.send('I removed your "War Notification" role.')).catch((err) => console.log(err));
-        }
+    if (messageReaction.message.id == '1212050818619019266') {
+        messageReaction.users.remove(User.id);
+        guildMember.roles.add(memberRole.id);
+        ruleChannel.send(`${User}`).then(msg => msg.delete());
     }
-    if (messageReaction.message.id == '1209140109446750222') {
-        messageReaction.users.remove(thisMember.id);
-        let role = messageReaction.message.guild.roles.cache.find(r => r.name === "War Notification");
-        if (thisMember.nickname) {
-            role.members.forEach(member => member.send(`A war is happening! Alert sent from ${thisMember.nickname}.`).catch((err) => console.log(err)));
-        } else {
-            role.members.forEach(member => member.send(`A war is happening! Alert sent from ${thisMember.displayName}.`).catch((err) => console.log(err)));
-        }
+    if (messageReaction.message.id == '1211998774378111016') {
+        messageReaction.users.remove(User.id);
+        guildMember.roles.add(tryouterRole.id);
     }
-    if (messageReaction.message.id == '1210588479667314789') {
-        appliers_wh.send({ content: `*${thisMember.id}* **${thisMember.displayName}** applied for tryouts` })
-        messageReaction.users.remove(thisMember.id);
-        thisMember.roles.add('1210582191034212402');
+    if (messageReaction.message.id == '1212769329536307240') {
+        messageReaction.users.remove(User.id);
+        guildMember.roles.add(pkRole.id);
+    }
+
+    const fiveH = messageReaction.message.guild.roles.cache.get('1212804959079501834')
+    const tenH = messageReaction.message.guild.roles.cache.get('1212804778506190878')
+    const twentH = messageReaction.message.guild.roles.cache.get('1210990907461996634')
+    const thirtH = messageReaction.message.guild.roles.cache.get('1210990598266294312')
+
+    const fiveB = messageReaction.message.guild.roles.cache.get('1212805029774229635')
+    const tenB = messageReaction.message.guild.roles.cache.get('1212804387198472232')
+    const twentB = messageReaction.message.guild.roles.cache.get('1212792247263830036')
+    const thirtB = messageReaction.message.guild.roles.cache.get('1212792260744192071')
+
+    if (messageReaction.message.guild.id == '1199088499647852695') {
+        if (messageReaction.message.id == '1212878654246359082') { // marine
+            messageReaction.users.remove(User.id);
+            if (messageReaction.emoji.name == '🛡️') {
+                guildMember.roles.add(fiveH.id)
+                if (guildMember.roles.cache.has(fiveH.id)) return guildMember.roles.remove(fiveH.id)
+            }
+            if (messageReaction.emoji.name == '⚔️') {
+                guildMember.roles.add(tenH.id)
+                if (guildMember.roles.cache.has(tenH.id)) return guildMember.roles.remove(tenH.id)
+            }
+            if (messageReaction.emoji.name == '🗿') {
+                guildMember.roles.add(twentH.id)
+                if (guildMember.roles.cache.has(twentH.id)) return guildMember.roles.remove(twentH.id)
+            }
+            if (messageReaction.emoji.name == '💎') {
+                guildMember.roles.add(thirtH.id)
+                if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id)
+            }
+        }
+        if (messageReaction.message.id == '1212878658902167586') { // pirate
+            messageReaction.users.remove(User.id);
+            if (messageReaction.emoji.name == '🛡️') {
+                guildMember.roles.add(fiveB.id)
+                if (guildMember.roles.cache.has(fiveB.id)) return guildMember.roles.remove(fiveB.id)
+            }
+            if (messageReaction.emoji.name == '⚔️') {
+                guildMember.roles.add(tenB.id)
+                if (guildMember.roles.cache.has(tenB.id)) return guildMember.roles.remove(tenB.id)
+            }
+            if (messageReaction.emoji.name == '🗿') {
+                guildMember.roles.add(twentB.id)
+                if (guildMember.roles.cache.has(twentB.id)) return guildMember.roles.remove(twentB.id)
+            }
+            if (messageReaction.emoji.name == '💎') {
+                guildMember.roles.add(thirtB.id)
+                if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id)
+            }
+        }
     }
 });
 
@@ -507,93 +552,24 @@ client.on('messageCreate', async (message) => {
 
     switch (command) {
 
-        case 'warToggleEmbed':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            (await message.channel.send(`## Alert members with <@&1208173219819814912> role that there is a war going on in your lobby by reacting to this message.`)).react('⚠️')
-            break;
-
-        case 'warAlertEmbed':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            (await message.channel.send(`### To toggle war alerts react to this message. (<@1136001498728386610> will send you a direct message, make sure you have enabled "Allow direct messages from server members" in Discord settings)`)).react('🛎️')
-            break;
-
-        case 'welcomeEmbed':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const welcomeEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setTitle('Welcome to Polyphia')
-                .setDescription('- <#1209482242284453908>')
-                .setImage('https://media1.tenor.com/m/-Er3OcH93cQAAAAC/kibutsuji-muzan.gif')
-            message.channel.send({ embeds: [welcomeEmbed] });
-            break;
-
         // hunter fights main division for (tryouts), if they lose they fight kez and then if they lose completely theyre out, if they win atleast once theyre 2nd div, if they beat wzoom completly theyre 1
-        case 'apply':
+        case 'welcome':
             if (message.author.id !== config.master) return;
             message.delete();
             const applyEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setTitle('Apply for tryouts!')
-                ; (await message.channel.send({ embeds: [applyEmbed] })).react('💎')
+                .setDescription('## React to gain access to the server.')
+                ; (await message.channel.send({ embeds: [applyEmbed] })).react('🤍')
             break;
 
-        case 'trials':
+        case 'join':
             if (message.author.id !== config.master) return;
             message.delete();
-            const trialsEmbed = new EmbedBuilder()
+            const tojoinEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setDescription(`### In order to join Polyphia you must go through 2 trials to find your placement.\nFirstly you must 1v1 **Hunter** out of 5 rounds, if you win you'll become a **First Division** member, however if you lose you'll be put into a 1v1 with **Kez** to try for **Second Division**.\n# Order of ranks:\n### <@&1210602024605974549>\n### <@&1210602080176312371>\n### <@&1210582984248397854>\n### <@&1210601713174577243>
-                `)
-                .setFooter({ text: 'Disclaimer: This server is not the main Polyphia server.'})
-            message.channel.send({ embeds: [trialsEmbed] });
-            break;
-
-        case 'footer':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const footerEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setFooter({ text: 'Members can challenge any of the kizuki to a 1v1 in order to claim their rank.' })
-            message.channel.send({ embeds: [footerEmbed] });
-            break;
-
-        case 'upper':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const upperEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setImage('https://media1.tenor.com/m/iHXIzCUw8HAAAAAC/akaza-kokushibo.gif')
-                .addFields(
-                    { name: 'Upper 1', value: `<@944655950260879371>`, inline: true },
-                    { name: 'Upper 2', value: `<@818948986374193193>`, inline: true },
-                    { name: 'Upper 3', value: `<@1071452294450774118>`, inline: true },
-                    { name: 'Upper 4', value: `<@753951863342104669>`, inline: true },
-                    { name: 'Upper 5', value: `<@358332965517787137>`, inline: true },
-                    { name: 'Upper 6', value: `<@1049850057207332874>`, inline: true },
-                )
-                .setDescription('## <@&1209484077099655210>')
-            message.channel.send({ embeds: [upperEmbed] });
-            break;
-
-        case 'lower':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const lowerEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setImage('https://media1.tenor.com/m/KwNbxtAZ7rwAAAAC/kimetsu-no-yaiba-mugen-train.gif')
-                .addFields(
-                    { name: 'Lower 1', value: `<@249300259694575616>`, inline: true },
-                    { name: 'Lower 2', value: `<@341030858167418881>`, inline: true },
-                    { name: 'Lower 3', value: `<@1203716125892943872>`, inline: true },
-                    { name: 'Lower 4', value: `<@1196157075185737779>`, inline: true },
-                    { name: 'Lower 5', value: `none`, inline: true },
-                    { name: 'Lower 6', value: `none`, inline: true },
-                )
-                .setDescription(`## <@&1209484082682134558>`)
-            message.channel.send({ embeds: [lowerEmbed] });
+                .setDescription(`\n### <@&1211632162328289302>, this is how you can join:\nYou will 1v1 **<@1135986663152173278>** first to 5, **no race v4**. Play as well as you can. If you end up losing you are still able to join if they see you play well. Upon joining you will be placed into **<@&1211617906199367710>**.`)
+                .setFooter({ text: 'React to become a tryouter.' })
+                ; (await message.channel.send({ embeds: [tojoinEmbed] })).react('⚔️')
             break;
 
         case 'lock':
@@ -635,11 +611,15 @@ client.on('messageCreate', async (message) => {
             if (message.author.id !== config.master) return;
             message.delete();
             const tosEmbed = new EmbedBuilder()
-            .setColor(config.color)
-            .setDescription(`### Follow Discord's [ToS](https://discord.com/terms) and [Guidelines](https://discord.com/guidelines)`)
-            .setFooter({ text: 'Upon failure to follow rules, you will be moderated accordingly.'})
-            message.channel.send({embeds: [tosEmbed]})
+                .setColor(config.color)
+                .setDescription(`### Follow Discord's [ToS](https://discord.com/terms) and [Guidelines](https://discord.com/guidelines)`)
+                .setFooter({ text: 'Upon failure to follow rules, you will be moderated accordingly.' })
+            message.channel.send({ embeds: [tosEmbed] })
             break;
+
+            case 'react':
+                (await message.channel.send('## React to become a part of pirate king rotation.')).react('👑')
+                break;
 
         case 'menu':
             const myServer = client.guilds.cache.get(config.server);
@@ -658,10 +638,38 @@ client.on('messageCreate', async (message) => {
                         { name: '$move', value: `Args: \`$move "user mention" "channel name"\`\n*(moves a user who is already in a voice channel into another one)*`, inline: true },
                         { name: '$lock', value: `*(locks a voice channel so no one else can join it, using the comand again will unlock it)*`, inline: true },
                     )
-                    .setFooter({ text: 'Add the word "Polyphia" in your status to get 1 billion a day (anyone can use this if they know about it).' })
+                    .setFooter({ text: 'Add the word "1 - 800" in your status to get 1 billion a day (anyone can use this if they know about it).' })
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
+
+        case 'marine':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const marineEmbed = new EmbedBuilder()
+            .setColor('Blue')
+            .setTitle('React to get Honour roles')
+            .setDescription(`- **5 Million** 🛡️ \n- **10 Million** ⚔️\n- **20 Million** 🗿\n- **30 Million** 💎`)
+            const msgM = await message.channel.send({ embeds: [marineEmbed] });
+            msgM.react('🛡️');
+            msgM.react('⚔️');
+            msgM.react('🗿');
+            msgM.react('💎');
+            break;
+
+            case 'pirate':
+                if (message.author.id !== config.master) return;
+                message.delete();
+                const pirateEmbed = new EmbedBuilder()
+                .setColor('Red')
+                .setTitle('React to get Bounty roles')
+                .setDescription(`- **5 Million** 🛡️ \n- **10 Million** ⚔️\n- **20 Million** 🗿\n- **30 Million** 💎`)
+                const msgP = await message.channel.send({ embeds: [pirateEmbed] });
+                msgP.react('🛡️');
+                msgP.react('⚔️');
+                msgP.react('🗿');
+                msgP.react('💎');
+                break;
 
         case 'message': // sends a message to the user mentioned
             if (message.guild.id !== config.server) return;
@@ -719,7 +727,7 @@ client.on('messageCreate', async (message) => {
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state)
     if (memberState == null) return;
-    if (memberState.state.includes('Polyphia')) {
+    if (memberState.state.includes('1 - 800')) {
         let userProfile = await UserProfile.findOne({
             userid: newPresence.member.id,
         });
@@ -734,7 +742,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
             }
         } else {
             userProfile = new UserProfile({
-                userid: interaction.member.id,
+                userid: newPresence.member.id,
             });
         }
 
@@ -751,17 +759,35 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 client.on('debug', console.log).on('warn', console.log);
 
 client.on('guildMemberAdd', (member) => {
+    /*
     const whitelisted = config.master
     const guildID = member.guild.id;
     const listEmbed = new EmbedBuilder()
         .setDescription(`### Username: \`${member.user.username}\`\n### User snowflake: \`${member.user.id}\``)
         .setImage('https://64.media.tumblr.com/d0885ed447a155854af6648892a2fb6d/9b7ddb5905533fa5-9e/s1280x1920/6d052dddb2453a19738270bdc5088496ca1d9846.jpg')
-    
+
     if (guildID == config.server) {
         if (!whitelisted.includes(member.user.id)) {
             member.kick().then(k_kick_WH.send({ embeds: [listEmbed] })).catch((err) => console.error(err));
         }
     }
+    */
+
+    if (member.guild.id !== config.server) return;
+
+    const enterEmbed = new EmbedBuilder()
+        .setColor(config.color)
+        .setDescription(`${member.id}, ${member.user.username}, ${member} has joined on:\n${member.joinedAt}`)
+        .setImage(`https://cdn.discordapp.com/avatars/${member.id}/${member.user.avatar}.jpeg`)
+
+    enter_exit_wh.send({ embeds: [enterEmbed] }).catch((err) => console.log(err));
+});
+
+client.on('guildMemberRemove', async (member) => {
+    const exitEmbed = new EmbedBuilder()
+        .setColor(config.color)
+        .setDescription(`${member.id}, ${member.user.username}, ${member} has left`)
+    enter_exit_wh.send({ embeds: [exitEmbed] }).catch((err) => console.log(err));
 });
 
 client.on('error', async (error) => { console.log(error) });
@@ -775,7 +801,22 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
-    client.user.setActivity({ name: `Polyphia`, type: ActivityType.Watching });
+
+    var index = 0;
+    const guildNames = client.guilds.cache.map(guild => guild.name);
+  
+    setInterval(() => {
+        client.user.setActivity({ name: `${guildNames[index]}`, type: ActivityType.Watching });
+      ++index;
+      if (!guildNames[index]) index = 0;
+    }, 10000)
+});
+
+client.on('messageDelete', async (message) => {
+    if (message.guild.id !== config.server) return;
+    if (message.member.id == config.clientId) return;
+    if (message.channel.parentId == '1136757420270567564') return;
+    messageLogWh.send({ content: `### ${message.author} ||${message.author.id}||\n**content:**\n\`\`\`${message.content}\`\`\``})
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {

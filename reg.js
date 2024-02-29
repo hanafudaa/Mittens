@@ -158,18 +158,6 @@ const commands = [
 
 const exclusivecommands = [
   {
-    name: 'blink',
-    description: 'Toggle your role color to blink',
-    options: [
-      {
-        name: 'option',
-        description: 'To blink, or not to blink',
-        type: ApplicationCommandOptionType.Boolean,
-        required: true,
-      },
-    ],
-  },
-  {
     name: 'Report message',
     type: 3
   },
