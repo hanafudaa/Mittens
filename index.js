@@ -66,6 +66,8 @@ const enter_exit_wh = new WebhookClient({ url: 'https://discord.com/api/webhooks
 const messageLogWh = new WebhookClient({ url: 'https://discord.com/api/webhooks/1212510144500338789/Dr5x8jyfpcBmRiXMpW7y2sf4ukOS46NgjM8xa-YT1gtPXK9tzXEEFnDystXnTsZKsN_r' });
 
 // ------------------------------------------------------------------------------------------------------------------------
+
+/*
 const express = require('express');
 
 const app = express();
@@ -74,7 +76,7 @@ app.get('/', (request, response) => {
     return response.sendFile('index.html', { root: '.' });
 });
 
-app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));
+app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));*/
 
 // ------------------------------------------------------------------------------------------------------------------------
 
@@ -394,7 +396,7 @@ client.on('interactionCreate', async (interaction) => {
         const avatarEmbed = new EmbedBuilder()
             .setColor(config.color)
             .setTitle(`${avataruser.displayName}'s avatar`)
-            .setImage(`https://cdn.discordapp.com/avatars/${avataruser.id}/${avataruser.avatar}.jpeg`)
+            .setImage(`https://cdn.discordapp.com/avatars/${avataruser.id}/${avataruser.avatar}.png?size=1024`)
         interaction.reply({ embeds: [avatarEmbed] }).catch((err) => console.error(err));
     }
 
@@ -493,9 +495,11 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
     const twentB = messageReaction.message.guild.roles.cache.get('1212792247263830036')
     const thirtB = messageReaction.message.guild.roles.cache.get('1212792260744192071')
 
+    const crewRole = messageReaction.message.guild.roles.cache.get('1212801646388715541')
+
     if (messageReaction.message.guild.id == '1199088499647852695') {
         try {
-            if (messageReaction.message.id == '1212922969408675840') { // marine
+            if (messageReaction.message.id == '1213102823156351006') { // marine
                 messageReaction.users.remove(User.id);
                 if (messageReaction.emoji.name == '🛡️') {
                     guildMember.roles.add(fiveH.id)
@@ -514,7 +518,7 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
                     if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id)
                 }
             }
-            if (messageReaction.message.id == '1212922961066070046') { // pirate
+            if (messageReaction.message.id == '1213102818160812062') { // pirate
                 messageReaction.users.remove(User.id);
                 if (messageReaction.emoji.name == '🛡️') {
                     guildMember.roles.add(fiveB.id)
@@ -532,6 +536,11 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
                     guildMember.roles.add(thirtB.id)
                     if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id)
                 }
+            }
+            if (messageReaction.message.id == '1213102826948001792') { // crew
+                messageReaction.users.remove(User.id);
+                guildMember.roles.add(crewRole.id)
+                if (guildMember.roles.cache.has(crewRole.id)) return guildMember.roles.remove(crewRole)
             }
         } catch (err) {
             console.log(err)
@@ -700,6 +709,15 @@ client.on('messageCreate', async (message) => {
             member.send(text).then(message.reply(`Message sent to ${member}, message content:\n\`\`\`${text}\`\`\``)).catch((err) => console.error('error when sending message to user ' + err));
             break;
 
+        case 'crew':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const crewEmbed = new EmbedBuilder()
+                .setColor('DarkRed')
+                .setTitle('React if you\'re currently in the crew')
+                ; (await message.channel.send({ embeds: [crewEmbed] })).react('1208336373874958336')
+            break;
+
         case 'send':
             if (message.guild.id !== config.server) return;
             if (message.channel.type === ChannelType.DM) return;
@@ -777,8 +795,8 @@ client.on('guildMemberAdd', (member) => {
 
     const enterEmbed = new EmbedBuilder()
         .setColor(config.color)
-        .setDescription(`${member.id}, ${member.user.username}, ${member} has joined on:\n${member.joinedAt}`)
-        .setImage(`https://cdn.discordapp.com/avatars/${member.id}/${member.user.avatar}.jpeg`)
+        .setDescription(`${member.id}, ${member.user.username}, ${member} has joined ${member.guild.name} on:\n${member.joinedAt}`)
+        .setImage(`https://cdn.discordapp.com/avatars/${member.id}/${member.user.avatar}.png?size=1024`)
 
     enter_exit_wh.send({ embeds: [enterEmbed] }).catch((err) => console.log(err));
 });
@@ -786,7 +804,7 @@ client.on('guildMemberAdd', (member) => {
 client.on('guildMemberRemove', async (member) => {
     const exitEmbed = new EmbedBuilder()
         .setColor(config.color)
-        .setDescription(`${member.id}, ${member.user.username}, ${member} has left`)
+        .setDescription(`${member.id}, ${member.user.username}, ${member} has left ${member.guild.name}`)
     enter_exit_wh.send({ embeds: [exitEmbed] }).catch((err) => console.log(err));
 });
 
@@ -813,9 +831,12 @@ client.once('ready', async () => {
 });
 
 client.on('messageDelete', async (message) => {
-    if (message.author.bot) return;
+    if (message == null) return;
+    if (message.channel.type == ChannelType.DM) return;
+    if (message.content == null) return;
     if (message.channel.parentId == '1136757420270567564') return;
-    messageLogWh.send({ content: `### ${message.author} ||${message.author.id}||\n**content:**\n\`\`\`${message.content}\`\`\`` })
+    if (message.content.length >= 1500) return;
+    messageLogWh.send({ content: `### ${message.author} ||${message.author.id}||\n**content:**\n\`\`\`${message.content}\`\`\`\nchannel: ${message.channel.name} ||${message.channel.id}||` }).catch((err) => console.log(err));
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
