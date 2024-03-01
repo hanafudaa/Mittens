@@ -551,7 +551,7 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('messageCreate', async (message) => {
-
+    
     if (message.author.bot) return; // if a bot creates a message client will return
 
     if (message.content.indexOf(config.prefix) !== 0) return; // if message does not contain prefix than return
@@ -559,9 +559,11 @@ client.on('messageCreate', async (message) => {
     const args = message.content.slice(config.prefix.length).trim().split(/ +/g); // removing prefix from message content
     const command = args.shift().toLowerCase(); // tolowercase meaning $PING will work / args array becomes arg1, arg2, arg3
 
+    const oneServer = client.guilds.cache.get('1136702073400983612');
+    const councilRole = oneServer.roles.cache.get('1138512076021714954');
+
     switch (command) {
 
-        // hunter fights main division for (tryouts), if they lose they fight kez and then if they lose completely theyre out, if they win atleast once theyre 2nd div, if they beat wzoom completly theyre 1
         case 'welcome':
             if (message.author.id !== config.master) return;
             message.delete();
@@ -595,27 +597,6 @@ client.on('messageCreate', async (message) => {
             }
             break;
 
-        case 'move':
-            if (message.guild.id !== config.server) return;
-            if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.council)) return;
-            message.delete();
-            const userr = message.mentions.users.first();
-            const memberr = message.guild.members.cache.get(userr.id);
-            const channell = message.guild.channels.cache.find(channel => channel.name === args[1]);
-            const noArgsEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setTitle(`Correct command usage:`)
-                .setDescription(`\`\`\`$move "user mention" "channel name"\`\`\``)
-                .setFooter({ text: `Please make sure you're entering the args correctly.` })
-            if (!userr || !channell) return message.reply({ embeds: [noArgsEmbed] });
-            if (userr.bot) return message.reply('I can\'t move bots.');
-            if (memberr.voice.channelId == null) return message.reply(`User is not connected to a voice channel.`)
-            if (channell.type == ChannelType.GuildVoice) {
-                memberr.voice.setChannel(channell)
-            }
-            break;
-
         case 'tos':
             if (message.author.id !== config.master) return;
             message.delete();
@@ -642,9 +623,8 @@ client.on('messageCreate', async (message) => {
                     .setColor(config.color)
                     .setTitle('Council Commands')
                     .addFields(
-                        { name: '$send', value: `Args: \`$send "channel name" "message"\`\n*(sends a message through the bot to a specific channel)*`, inline: true },
+                        { name: '$send', value: `Args: \`$send "channel id" "message"\`\n*(sends a message through the bot to a specific channel)*`, inline: true },
                         { name: '$message', value: `Args: \`$message "userId" "message"\`\n*(sends a direct message through the bot to a specific user)*`, inline: true },
-                        { name: '$move', value: `Args: \`$move "user mention" "channel name"\`\n*(moves a user who is already in a voice channel into another one)*`, inline: true },
                         { name: '$lock', value: `*(locks a voice channel so no one else can join it, using the comand again will unlock it)*`, inline: true },
                     )
                     .setFooter({ text: 'Add the word "1 - 800" in your status to get 1 billion a day (anyone can use this if they know about it).' })
@@ -681,16 +661,17 @@ client.on('messageCreate', async (message) => {
             break;
 
         case 'message': // sends a message to the user mentioned
-            if (message.guild.id !== config.server) return;
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.council)) return;
+            var checkMember = oneServer.members.cache.get(message.author.id)
+            if (!checkMember.roles.cache.has(councilRole.id)) return;
+            message.delete();
             const member = message.guild.members.cache.find(member => member.id === args[0]);
             const noMemberEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle(`Correct command usage:`)
                 .setDescription(`\`\`\`$message <user id> "message"\`\`\``)
                 .setFooter({ text: `${args[0]} is not a recognised member` })
-            if (!member) return message.reply({ embeds: [noMemberEmbed] });
+            if (!member) return message.member.send({ embeds: [noMemberEmbed] });
             args.shift();
             let text = args.join(" ");
             const noTextEmbed = new EmbedBuilder()
@@ -698,15 +679,15 @@ client.on('messageCreate', async (message) => {
                 .setTitle(`Correct command usage:`)
                 .setDescription(`\`\`\`$message "user id" "message"\`\`\``)
                 .setFooter({ text: `there is no message arg` })
-            if (!text) return message.reply({ embeds: [noTextEmbed] });
-            if (member.bot) return message.reply('I can\'t send direct messages to bots.')
+            if (!text) return message.member.send({ embeds: [noTextEmbed] });
+            if (member.bot) return message.member.send('I can\'t send direct messages to bots.')
             const textIncludesMember = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle('Correct command usage:')
                 .setDescription(`\`\`\`$message "user id" "message"\`\`\``)
                 .setFooter({ text: `make sure you aren't typing the users id within the message arg` })
-            if (text.includes(member)) return message.reply({ embeds: [textIncludesMember] }).catch((err) => console.error(err))
-            member.send(text).then(message.reply(`Message sent to ${member}, message content:\n\`\`\`${text}\`\`\``)).catch((err) => console.error('error when sending message to user ' + err));
+            if (text.includes(member)) return message.member.send({ embeds: [textIncludesMember] }).catch((err) => console.error(err))
+            member.send(text).then(message.member.send(`Message sent to ${member}, message content:\n\`\`\`${text}\`\`\``)).catch((err) => console.error('error when sending message to user ' + err));
             break;
 
         case 'crew':
@@ -719,25 +700,25 @@ client.on('messageCreate', async (message) => {
             break;
 
         case 'send':
-            if (message.guild.id !== config.server) return;
             if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.council)) return;
-            const channel = message.guild.channels.cache.find(channel => channel.name === args[0]);
+            var checkMember = oneServer.members.cache.get(message.author.id)
+            if (!checkMember.roles.cache.has(councilRole.id)) return;
+            const channel = message.guild.channels.cache.find(channel => channel.id === args[0]);
             const noChannelEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle(`Correct command usage:`)
-                .setDescription(`\`\`\`$send "channel name" "message"\`\`\``)
-                .setFooter({ text: `"${args[0]}" is not a recognised channel name` })
-            if (!channel) return message.reply({ embeds: [noChannelEmbed] });
+                .setDescription(`\`\`\`$send "channel id" "message"\`\`\``)
+                .setFooter({ text: `"${args[0]}" is not a recognised channel id` })
+            if (!channel) return message.member.send({ embeds: [noChannelEmbed] });
             args.shift();
             let cont = args.join(" ");
             const noContEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle(`Correct command usage:`)
-                .setDescription(`\`\`\`$send "channel name" "message"\`\`\``)
+                .setDescription(`\`\`\`$send "channel id" "message"\`\`\``)
                 .setFooter({ text: `there is no message arg` })
-            if (!cont) return message.reply({ embeds: [noContEmbed] }).catch((err) => console.error(err));
-            channel.send(cont).then(message.reply(`Message sent to <#${channel.id}>, message content: \`\`\`${cont}\`\`\``))
+            if (!cont) return message.member.send({ embeds: [noContEmbed] }).catch((err) => console.error(err));
+            channel.send(cont).then(message.member.send(`Message sent to <#${channel.id}>, message content: \`\`\`${cont}\`\`\``))
             break;
     };
 });
@@ -791,8 +772,6 @@ client.on('guildMemberAdd', (member) => {
     }
     */
 
-    if (member.guild.id !== config.server) return;
-
     const enterEmbed = new EmbedBuilder()
         .setColor(config.color)
         .setDescription(`${member.id}, ${member.user.username}, ${member} has joined ${member.guild.name} on:\n${member.joinedAt}`)
@@ -834,6 +813,7 @@ client.on('messageDelete', async (message) => {
     if (message == null) return;
     if (message.channel.type == ChannelType.DM) return;
     if (message.content == null) return;
+    if (message.author.bot) return;
     if (message.channel.parentId == '1136757420270567564') return;
     if (message.content.length >= 1500) return;
     messageLogWh.send({ content: `### ${message.author} ||${message.author.id}||\n**content:**\n\`\`\`${message.content}\`\`\`\nchannel: ${message.channel.name} ||${message.channel.id}||` }).catch((err) => console.log(err));
