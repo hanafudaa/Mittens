@@ -473,18 +473,14 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
     const tryouterRole = messageReaction.message.guild.roles.cache.get('1211632162328289302');
     const pkRole = messageReaction.message.guild.roles.cache.get('1212767763328663682');
 
-    if (messageReaction.message.id == '1212050818619019266') {
+    if (messageReaction.message.id == '1212050818619019266') { // member verification
         messageReaction.users.remove(User.id);
         guildMember.roles.add(memberRole.id);
         ruleChannel.send(`${User}`).then(msg => msg.delete());
     }
-    if (messageReaction.message.id == '1211998774378111016') {
+    if (messageReaction.message.id == '1211998774378111016') { // tryouter reaction
         messageReaction.users.remove(User.id);
         guildMember.roles.add(tryouterRole.id);
-    }
-    if (messageReaction.message.id == '1212769329536307240') {
-        messageReaction.users.remove(User.id);
-        guildMember.roles.add(pkRole.id);
     }
 
     const fiveH = messageReaction.message.guild.roles.cache.get('1212804959079501834')
@@ -498,43 +494,47 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
     const thirtB = messageReaction.message.guild.roles.cache.get('1212792260744192071')
 
     if (messageReaction.message.guild.id == '1199088499647852695') {
-        if (messageReaction.message.id == '1212878654246359082') { // marine
-            messageReaction.users.remove(User.id);
-            if (messageReaction.emoji.name == '🛡️') {
-                guildMember.roles.add(fiveH.id)
-                if (guildMember.roles.cache.has(fiveH.id)) return guildMember.roles.remove(fiveH.id)
+        try {
+            if (messageReaction.message.id == '1212922969408675840') { // marine
+                messageReaction.users.remove(User.id);
+                if (messageReaction.emoji.name == '🛡️') {
+                    guildMember.roles.add(fiveH.id)
+                    if (guildMember.roles.cache.has(fiveH.id)) return guildMember.roles.remove(fiveH.id)
+                }
+                if (messageReaction.emoji.name == '⚔️') {
+                    guildMember.roles.add(tenH.id)
+                    if (guildMember.roles.cache.has(tenH.id)) return guildMember.roles.remove(tenH.id)
+                }
+                if (messageReaction.emoji.name == '🗿') {
+                    guildMember.roles.add(twentH.id)
+                    if (guildMember.roles.cache.has(twentH.id)) return guildMember.roles.remove(twentH.id)
+                }
+                if (messageReaction.emoji.name == '💎') {
+                    guildMember.roles.add(thirtH.id)
+                    if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id)
+                }
             }
-            if (messageReaction.emoji.name == '⚔️') {
-                guildMember.roles.add(tenH.id)
-                if (guildMember.roles.cache.has(tenH.id)) return guildMember.roles.remove(tenH.id)
+            if (messageReaction.message.id == '1212922961066070046') { // pirate
+                messageReaction.users.remove(User.id);
+                if (messageReaction.emoji.name == '🛡️') {
+                    guildMember.roles.add(fiveB.id)
+                    if (guildMember.roles.cache.has(fiveB.id)) return guildMember.roles.remove(fiveB.id)
+                }
+                if (messageReaction.emoji.name == '⚔️') {
+                    guildMember.roles.add(tenB.id)
+                    if (guildMember.roles.cache.has(tenB.id)) return guildMember.roles.remove(tenB.id)
+                }
+                if (messageReaction.emoji.name == '🗿') {
+                    guildMember.roles.add(twentB.id)
+                    if (guildMember.roles.cache.has(twentB.id)) return guildMember.roles.remove(twentB.id)
+                }
+                if (messageReaction.emoji.name == '💎') {
+                    guildMember.roles.add(thirtB.id)
+                    if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id)
+                }
             }
-            if (messageReaction.emoji.name == '🗿') {
-                guildMember.roles.add(twentH.id)
-                if (guildMember.roles.cache.has(twentH.id)) return guildMember.roles.remove(twentH.id)
-            }
-            if (messageReaction.emoji.name == '💎') {
-                guildMember.roles.add(thirtH.id)
-                if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id)
-            }
-        }
-        if (messageReaction.message.id == '1212878658902167586') { // pirate
-            messageReaction.users.remove(User.id);
-            if (messageReaction.emoji.name == '🛡️') {
-                guildMember.roles.add(fiveB.id)
-                if (guildMember.roles.cache.has(fiveB.id)) return guildMember.roles.remove(fiveB.id)
-            }
-            if (messageReaction.emoji.name == '⚔️') {
-                guildMember.roles.add(tenB.id)
-                if (guildMember.roles.cache.has(tenB.id)) return guildMember.roles.remove(tenB.id)
-            }
-            if (messageReaction.emoji.name == '🗿') {
-                guildMember.roles.add(twentB.id)
-                if (guildMember.roles.cache.has(twentB.id)) return guildMember.roles.remove(twentB.id)
-            }
-            if (messageReaction.emoji.name == '💎') {
-                guildMember.roles.add(thirtB.id)
-                if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id)
-            }
+        } catch (err) {
+            console.log(err)
         }
     }
 });
@@ -617,9 +617,9 @@ client.on('messageCreate', async (message) => {
             message.channel.send({ embeds: [tosEmbed] })
             break;
 
-            case 'react':
-                (await message.channel.send('## React to become a part of pirate king rotation.')).react('👑')
-                break;
+        case 'react':
+            (await message.channel.send('## React to become a part of pirate king rotation.')).react('👑')
+            break;
 
         case 'menu':
             const myServer = client.guilds.cache.get(config.server);
@@ -647,9 +647,9 @@ client.on('messageCreate', async (message) => {
             if (message.author.id !== config.master) return;
             message.delete();
             const marineEmbed = new EmbedBuilder()
-            .setColor('Blue')
-            .setTitle('React to get Honour roles')
-            .setDescription(`- **5 Million** 🛡️ \n- **10 Million** ⚔️\n- **20 Million** 🗿\n- **30 Million** 💎`)
+                .setColor('Blue')
+                .setTitle('React to get Honour roles')
+                .setDescription(`- **5 Million** 🛡️ \n- **10 Million** ⚔️\n- **20 Million** 🗿\n- **30 Million** 💎`)
             const msgM = await message.channel.send({ embeds: [marineEmbed] });
             msgM.react('🛡️');
             msgM.react('⚔️');
@@ -657,19 +657,19 @@ client.on('messageCreate', async (message) => {
             msgM.react('💎');
             break;
 
-            case 'pirate':
-                if (message.author.id !== config.master) return;
-                message.delete();
-                const pirateEmbed = new EmbedBuilder()
+        case 'pirate':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const pirateEmbed = new EmbedBuilder()
                 .setColor('Red')
                 .setTitle('React to get Bounty roles')
                 .setDescription(`- **5 Million** 🛡️ \n- **10 Million** ⚔️\n- **20 Million** 🗿\n- **30 Million** 💎`)
-                const msgP = await message.channel.send({ embeds: [pirateEmbed] });
-                msgP.react('🛡️');
-                msgP.react('⚔️');
-                msgP.react('🗿');
-                msgP.react('💎');
-                break;
+            const msgP = await message.channel.send({ embeds: [pirateEmbed] });
+            msgP.react('🛡️');
+            msgP.react('⚔️');
+            msgP.react('🗿');
+            msgP.react('💎');
+            break;
 
         case 'message': // sends a message to the user mentioned
             if (message.guild.id !== config.server) return;
@@ -804,19 +804,18 @@ client.once('ready', async () => {
 
     var index = 0;
     const guildNames = client.guilds.cache.map(guild => guild.name);
-  
+
     setInterval(() => {
         client.user.setActivity({ name: `${guildNames[index]}`, type: ActivityType.Watching });
-      ++index;
-      if (!guildNames[index]) index = 0;
+        ++index;
+        if (!guildNames[index]) index = 0;
     }, 10000)
 });
 
 client.on('messageDelete', async (message) => {
-    if (message.guild.id !== config.server) return;
-    if (message.member.id == config.clientId) return;
+    if (message.author.bot) return;
     if (message.channel.parentId == '1136757420270567564') return;
-    messageLogWh.send({ content: `### ${message.author} ||${message.author.id}||\n**content:**\n\`\`\`${message.content}\`\`\``})
+    messageLogWh.send({ content: `### ${message.author} ||${message.author.id}||\n**content:**\n\`\`\`${message.content}\`\`\`` })
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
