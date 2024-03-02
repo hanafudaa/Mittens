@@ -551,7 +551,7 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('messageCreate', async (message) => {
-    
+
     if (message.author.bot) return; // if a bot creates a message client will return
 
     if (message.content.indexOf(config.prefix) !== 0) return; // if message does not contain prefix than return
@@ -703,6 +703,7 @@ client.on('messageCreate', async (message) => {
             if (message.channel.type === ChannelType.DM) return;
             var checkMember = oneServer.members.cache.get(message.author.id)
             if (!checkMember.roles.cache.has(councilRole.id)) return;
+            message.delete();
             const channel = message.guild.channels.cache.find(channel => channel.id === args[0]);
             const noChannelEmbed = new EmbedBuilder()
                 .setColor(config.color)
