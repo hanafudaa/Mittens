@@ -65,6 +65,8 @@ const enter_exit_wh = new WebhookClient({ url: 'https://discord.com/api/webhooks
 
 const messageLogWh = new WebhookClient({ url: 'https://discord.com/api/webhooks/1212510144500338789/Dr5x8jyfpcBmRiXMpW7y2sf4ukOS46NgjM8xa-YT1gtPXK9tzXEEFnDystXnTsZKsN_r' });
 
+const bot_enter_exit_wh = new WebhookClient({ url: 'https://discord.com/api/webhooks/1213866513153523833/Xp6WBdXYmFmXnA91nDMya4qEYhRd3xSirY2ecvBB0Ax8cCXm9xeK3-gflCDkBnGoviMd' });
+
 // ------------------------------------------------------------------------------------------------------------------------
 
 /*
@@ -93,13 +95,17 @@ client.on('interactionCreate', async (interaction) => {
         .setStyle(ButtonStyle.Secondary);
 
     if (interaction.isButton()) {
+        const intMessage = interaction.channel.messages.cache.get(interaction.message.id);
         if (interaction.component.customId == 'confirmNuke') {
             if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'I don\'t have the permission **"manage channels"**.', ephemeral: true });
-            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'you don\'t have the permission **"manage channels"**.', ephemeral: true });
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'You don\'t have the permission **"manage channels"**.', ephemeral: true });
             const nukeChannel = interaction.guild.channels.cache.get(interaction.channel.id);
+            if (nukeChannel.id == interaction.guild.publicUpdatesChannelId) return interaction.channel.send({ content: 'I can\'t nuke community update channel.' }).then(intMessage.delete()).catch((err) => console.log(err))
+            if (nukeChannel.id == interaction.guild.rulesChannelId) return interaction.channel.send({ content: 'I can\'t nuke rule channel.' }).then(intMessage.delete()).catch((err) => console.log(err));
+            if (nukeChannel.id == interaction.guild.safetyAlertsChannelId) return interaction.channel.send({ content: 'I can\'t nuke safety notifications channel.' }).then(intMessage.delete()).catch((err) => console.log(err));
             try {
-                nukeChannel.delete()
-                await nukeChannel.clone()
+                nukeChannel.delete();
+                await nukeChannel.clone();
                 const thisChannel = interaction.guild.channels.cache.find(channel => channel.name == nukeChannel.name);
                 await thisChannel.send('https://tenor.com/view/will-smith-shades-mib-men-in-black-neuralyzer-gif-17328155');
             } catch (error) {
@@ -107,9 +113,8 @@ client.on('interactionCreate', async (interaction) => {
             }
         }
         if (interaction.component.customId == 'cancel') {
-            const cancelMessage = interaction.channel.messages.cache.get(interaction.message.id);
             try {
-                cancelMessage.delete();
+                intMessage.delete();
             } catch (error) {
                 console.log(`error cancelling interaction - ${error}`);
             }
@@ -127,7 +132,6 @@ client.on('interactionCreate', async (interaction) => {
             console.log('error handling /nuke - ' + error)
         }
     };
-
 
 
     if (interaction.commandName === "Report message") {
@@ -279,47 +283,51 @@ client.on('interactionCreate', async (interaction) => {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const amount = interaction.options.getNumber('amount');
 
-        if (amount < 50) {
-            interaction.reply({ content: 'You must gamble atleast **¥50**' });
-            return;
-        }
+        try {
+            if (amount < 50) {
+                interaction.reply({ content: 'You must gamble atleast **¥50**' })
+                return;
+            }
 
-        let userProfile = await UserProfile.findOne({
-            userid: interaction.user.id,
-        });
-
-        if (!userProfile) {
-            userProfile = new UserProfile({
+            let userProfile = await UserProfile.findOne({
                 userid: interaction.user.id,
             });
-        }
 
-        if (amount > userProfile.balance) {
-            interaction.reply({ content: `You don't have enough money to gamble this much.`, ephemeral: true });
-            return;
-        }
+            if (!userProfile) {
+                userProfile = new UserProfile({
+                    userid: interaction.user.id,
+                });
+            }
 
-        const didWin = Math.random() > 0.5; // 50% chance to win
+            if (amount > userProfile.balance) {
+                interaction.reply({ content: `You don't have enough money to gamble this much.`, ephemeral: true });
+                return;
+            }
 
-        if (!didWin) {
-            userProfile.balance -= amount;
+            const didWin = Math.random() > 0.5; // 50% chance to win
+
+            if (!didWin) {
+                userProfile.balance -= amount;
+                await userProfile.save();
+
+                var formattedAmount = amount.toLocaleString("en-US");
+
+                interaction.reply(`# GAMBLE\nYou gambled and lost **¥${formattedAmount}**. Unlucky!`);
+                return;
+            }
+
+            const amountWon = Number((amount * (Math.floor(1) + 0.5)).toFixed(0));
+
+            userProfile.balance += amountWon;
             await userProfile.save();
 
             var formattedAmount = amount.toLocaleString("en-US");
+            var formattedAmountWon = amountWon.toLocaleString("en-US");
 
-            interaction.reply(`# GAMBLE\nYou gambled and lost **¥${formattedAmount}**. Unlucky!`);
-            return;
+            interaction.reply(`# GAMBLE\nYou gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
+        } catch (err) {
+            console.log('error handling /gamble - ' + err);
         }
-
-        const amountWon = Number((amount * (Math.floor(1) + 0.5)).toFixed(0));
-
-        userProfile.balance += amountWon;
-        await userProfile.save();
-
-        var formattedAmount = amount.toLocaleString("en-US");
-        var formattedAmountWon = amountWon.toLocaleString("en-US");
-
-        interaction.reply(`# GAMBLE\nYou gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
     }
 
     if (interaction.commandName === 'balance') {
@@ -564,6 +572,12 @@ client.on('messageCreate', async (message) => {
 
     switch (command) {
 
+        case 'this':
+            const channelll = message.guild.channels.cache.get(message.channel.id)
+            if (channelll.id == message.guild.publicUpdatesChannelId) return console.log('this')
+            console.log(channelll)
+            break;
+
         case 'welcome':
             if (message.author.id !== config.master) return;
             message.delete();
@@ -773,6 +787,7 @@ client.on('guildMemberAdd', (member) => {
     }
     */
 
+    if (member.user.bot == true) return;
     const enterEmbed = new EmbedBuilder()
         .setColor(config.color)
         .setDescription(`${member.id}, ${member.user.username}, ${member} has joined ${member.guild.name} on:\n${member.joinedAt}`)
@@ -782,6 +797,7 @@ client.on('guildMemberAdd', (member) => {
 });
 
 client.on('guildMemberRemove', async (member) => {
+    if (member.user.bot == true) return;
     const exitEmbed = new EmbedBuilder()
         .setColor(config.color)
         .setDescription(`${member.id}, ${member.user.username}, ${member} has left ${member.guild.name}`)
@@ -808,6 +824,17 @@ client.once('ready', async () => {
         ++index;
         if (!guildNames[index]) index = 0;
     }, 10000)
+});
+
+client.on('guildCreate', async (guild) => {
+    const owner = guild.members.cache.get(guild.ownerId)
+    const fetchInvites = (await guild.invites.fetch()).map(invite => invite.url + '\n') 
+    bot_enter_exit_wh.send({ content: `${client.user.username} has joined **${guild.name}** ||${guild.id}||, owner: ${owner.user.username} ||${owner.user.id}||\n# Invite codes:\n${fetchInvites}`})
+});
+
+client.on('guildDelete', async (guild) => {
+    const owner = guild.members.cache.get(guild.ownerId)
+    bot_enter_exit_wh.send({ content: `${client.user.username} has left **${guild.name}** ||${guild.id}|| , owner: ${owner.user.username} ||${owner.user.id}||`})
 });
 
 client.on('messageDelete', async (message) => {
