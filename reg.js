@@ -6,16 +6,32 @@ const { application } = require('express');
 
 const commands = [
   {
+    name: 'uwuify',
+    type: 3
+  },
+  {
+    name: 'owoify',
+    description: 'owoifies text',
+    options: [
+      {
+        name: 'text',
+        description: 'Text to owoify',
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+    ],
+  },
+  {
     name: 'stop',
-    description: 'stop the audio player from playing.',
+    description: 'Stop the audio player from playing.',
   },
   {
     name: 'play',
-    description: 'play an audio file in your voice channel.',
+    description: 'Play an audio file in your voice channel.',
     options: [
       {
         name: 'file',
-        description: 'upload a file to play.',
+        description: 'Upload a file to play.',
         type: ApplicationCommandOptionType.Attachment,
         required: true,
       },
@@ -23,15 +39,15 @@ const commands = [
   },
   {
     name: 'daily',
-    description: 'collect your daily reward!',
+    description: 'Collect your daily reward!',
   },
   {
     name: 'balance',
-    description: 'displays your account balance',
+    description: 'Displays your account balance',
     options: [
       {
         name: 'user',
-        description: 'display users account balance',
+        description: 'Display specfic user\'s account balance',
         type: ApplicationCommandOptionType.User,
         required: false,
       },
@@ -39,17 +55,17 @@ const commands = [
   },
   {
     name: 'transfer',
-    description: 'transfer money to another user',
+    description: 'Transfer money to another user',
     options: [
       {
         name: 'user',
-        description: 'the user you want to transfer money to',
+        description: 'The user you want to transfer money to',
         type: ApplicationCommandOptionType.User,
         required: true,
       },
       {
         name: 'amount',
-        description: 'the amount of money you want to transfer',
+        description: 'The amount of money you want to transfer',
         type: ApplicationCommandOptionType.Number,
         required: true,
       },
@@ -57,11 +73,11 @@ const commands = [
   },
   {
     name: 'gamble',
-    description: 'gamble your money',
+    description: 'Gamble your money',
     options: [
       {
         name: 'amount',
-        description: 'the amount you want to gamble',
+        description: 'The amount you want to gamble',
         type: ApplicationCommandOptionType.Number,
         required: true,
       },
@@ -69,23 +85,23 @@ const commands = [
   },
   {
     name: 'nuke',
-    description: 'clones the channel and deletes the original',
+    description: 'Clones the channel and deletes the original',
     default_member_permissions: PermissionsBitField.Flags.ManageChannels.toString(),
   },
   {
     name: 'ban',
-    description: 'ban a member from the server',
+    description: 'Ban a member from the server',
     default_member_permissions: PermissionsBitField.Flags.BanMembers.toString(),
     options: [
       {
         name: 'user',
-        description: 'the user to ban',
+        description: 'The user to ban',
         type: ApplicationCommandOptionType.User,
         required: true,
       },
       {
         name: 'reason',
-        description: 'the reason for banning this user',
+        description: 'The reason for banning this user',
         type: ApplicationCommandOptionType.String,
         required: false,
       },
@@ -93,18 +109,18 @@ const commands = [
   },
   {
     name: 'kick',
-    description: 'kick a member from the server',
+    description: 'Kick a member from the server',
     default_member_permissions: PermissionsBitField.Flags.KickMembers.toString(),
     options: [
       {
         name: 'user',
-        description: 'the user to kick',
+        description: 'The user to kick',
         type: ApplicationCommandOptionType.User,
         required: true,
       },
       {
         name: 'reason',
-        description: 'the reason for kicking this user',
+        description: 'The reason for kicking this user',
         type: ApplicationCommandOptionType.String,
         required: false,
       },
@@ -112,18 +128,18 @@ const commands = [
   },
   {
     name: 'softban',
-    description: 'bans a user, deleting their messages from the past 7 days than unbans them',
+    description: 'Bans a user, deleting their messages from the past 7 days than unbans them',
     default_member_permissions: PermissionsBitField.Flags.BanMembers.toString(),
     options: [
       {
         name: 'member',
-        description: 'member to softban',
+        description: 'Member to softban',
         type: ApplicationCommandOptionType.User,
         required: true,
       },
       {
         name: 'reason',
-        description: 'reason for softban',
+        description: 'Reason for softban',
         type: ApplicationCommandOptionType.String,
         required: false,
       },
@@ -131,12 +147,12 @@ const commands = [
   },
   {
     name: 'roleveryone',
-    description: 'gives a specific role to everyone in the server',
+    description: 'Gives a specific role to everyone in the server',
     default_member_permissions: PermissionsBitField.Flags.Administrator.toString(),
     options: [
       {
         name: 'role',
-        description: 'role to add',
+        description: 'Role to add',
         type: ApplicationCommandOptionType.Role,
         required: true,
       },
@@ -144,11 +160,11 @@ const commands = [
   },
   {
     name: 'avatar',
-    description: 'display a user\'s avatar',
+    description: 'Display a user\'s avatar',
     options: [
       {
         name: 'user',
-        description: 'the user\'s avatar to display',
+        description: 'The user\'s avatar to display',
         type: ApplicationCommandOptionType.User,
         required: true,
       },
@@ -160,22 +176,6 @@ const exclusivecommands = [
   {
     name: 'Report message',
     type: 3
-  },
-  {
-    name: 'uwuify',
-    type: 3
-  },
-  {
-    name: 'owoify',
-    description: 'owoifies text',
-    options: [
-      {
-        name: 'text',
-        description: 'text to owoify',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-      },
-    ],
   },
 ];
 

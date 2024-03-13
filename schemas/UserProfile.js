@@ -12,9 +12,6 @@ const userProfileSchema = new Schema({
     lastDailyCollected: {
         type: Date,
     },
-    lastPresenceCollected: {
-        type: Date,
-    },
 },
     { timestamps: true }
 );

