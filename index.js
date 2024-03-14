@@ -67,7 +67,7 @@ const bot_enter_exit_wh = new WebhookClient({ url: 'https://discord.com/api/webh
 
 // ------------------------------------------------------------------------------------------------------------------------
 
-/*
+
 const express = require('express');
 
 const app = express();
@@ -76,7 +76,7 @@ app.get('/', (request, response) => {
     return response.sendFile('index.html', { root: '.' });
 });
 
-app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));*/
+app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));
 
 // ------------------------------------------------------------------------------------------------------------------------
 
