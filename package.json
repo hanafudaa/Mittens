@@ -18,6 +18,7 @@
     "ffmpeg-static": "^5.2.0",
     "libsodium-wrappers": "^0.7.11",
     "mongoose": "^7.4.2",
-    "owoifyx": "^1.0.4"
+    "owoifyx": "^1.0.4",
+    "undici": "^6.9.0"
   }
 }

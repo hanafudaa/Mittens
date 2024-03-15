@@ -68,11 +68,47 @@ const bot_enter_exit_wh = new WebhookClient({ url: 'https://discord.com/api/webh
 // ------------------------------------------------------------------------------------------------------------------------
 
 
+const { request } = require('undici');
 const express = require('express');
 
 const app = express();
 
-app.get('/', (request, response) => {
+app.get('/', async ({ query }, response) => {
+    const { code } = query;
+
+    if (code) {
+        try {
+            const tokenResponseData = await request('https://discord.com/api/oauth2/token', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    client_id: config.clientId,
+                    client_secret: config.clientSecret,
+                    code,
+                    grant_type: 'authorization_code',
+                    redirect_uri: `http://localhost:${config.port}`,
+                    scope: 'identify',
+                }).toString(),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            });
+
+            const oauthData = await tokenResponseData.body.json();
+
+            const userResult = await request('https://discord.com/api/users/@me', {
+                headers: {
+                    authorization: `${oauthData.token_type} ${oauthData.access_token}`,
+                },
+            });
+
+            console.log(await userResult.body.json());
+        } catch (error) {
+            // NOTE: An unauthorized token will not throw an error
+            // tokenResponseData.statusCode will be 401
+            console.error(error);
+        }
+    }
+
     return response.sendFile('index.html', { root: '.' });
 });
 
@@ -514,7 +550,6 @@ client.on('interactionCreate', async (interaction) => {
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on("messageReactionAdd", async (messageReaction, User) => {
-    console.log(User.displayName + ' has reacted')
     const infoCHannel = messageReaction.message.guild.channels.cache.get('1217526842093863002');
     const memberRole = messageReaction.message.guild.roles.cache.get('1211647374196351047');
     const guildMember = messageReaction.message.guild.members.cache.get(User.id);
@@ -596,6 +631,8 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('messageCreate', async (message) => {
+
+    if (message.content.includes('gg/')) return message.delete().catch((err) => console.log(err));
 
     if (message.author.bot) return; // if a bot creates a message client will return
 
