@@ -85,7 +85,7 @@ app.get('/', async ({ query }, response) => {
                     client_secret: config.clientSecret,
                     code,
                     grant_type: 'authorization_code',
-                    redirect_uri: `http://localhost:${config.port}`,
+                    redirect_uri: `https://hanafudaa.github.io/cash-bot/`,
                     scope: 'identify',
                 }).toString(),
                 headers: {
@@ -112,7 +112,7 @@ app.get('/', async ({ query }, response) => {
     return response.sendFile('index.html', { root: '.' });
 });
 
-app.listen(config.port, () => console.log(`App listening at http://localhost:${config.port}`));
+app.listen(config.port, () => console.log(`App listening at https://hanafudaa.github.io/cash-bot/`));
 
 // ------------------------------------------------------------------------------------------------------------------------
 
