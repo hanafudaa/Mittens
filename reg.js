@@ -72,8 +72,8 @@ const commands = [
     ],
   },
   {
-    name: 'gamble',
-    description: 'Gamble your money',
+    name: '50-50',
+    description: '50/50 chance for money',
     options: [
       {
         name: 'amount',

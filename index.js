@@ -313,7 +313,7 @@ client.on('interactionCreate', async (interaction) => {
         interaction.reply(owoified).catch((err) => console.error(err));
     }
 
-    if (interaction.commandName === 'gamble') {
+    if (interaction.commandName === '50-50') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const amount = interaction.options.getNumber('amount');
         const amountWon = Number((amount * (Math.floor(1) + 0.5)).toFixed(0));
@@ -347,7 +347,7 @@ client.on('interactionCreate', async (interaction) => {
 
                 var formattedAmount = amount.toLocaleString("en-US");
 
-                interaction.reply(`# GAMBLE\nYou gambled and lost **¥${formattedAmount}**. Unlucky!`);
+                interaction.reply(`# 50/50\nYou gambled and lost **¥${formattedAmount}**. Unlucky!`);
                 return;
             }
 
@@ -357,9 +357,9 @@ client.on('interactionCreate', async (interaction) => {
             var formattedAmount = amount.toLocaleString("en-US");
             var formattedAmountWon = amountWon.toLocaleString("en-US");
 
-            interaction.reply(`# GAMBLE\nYou gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
+            interaction.reply(`# 50/50\nYou gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
         } catch (err) {
-            console.log('error handling /gamble - ' + err);
+            console.log('error handling /50-50 - ' + err);
         }
     }
 
@@ -893,14 +893,9 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
 
-    var index = 0;
-    const guildNames = client.guilds.cache.map(guild => guild.name);
-
     setInterval(() => {
-        client.user.setActivity({ name: `${guildNames[index]}`, type: ActivityType.Watching });
-        ++index;
-        if (!guildNames[index]) index = 0;
-    }, 10000)
+        client.user.setActivity({ name: `${client.guilds.cache.size} servers`, type: ActivityType.Watching });
+    }, 60000)
 });
 
 client.on('guildCreate', async (guild) => {
