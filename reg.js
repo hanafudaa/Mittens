@@ -6,6 +6,14 @@ const { application } = require('express');
 
 const commands = [
   {
+    name: 'rank',
+    description: 'Display your rank'
+  },
+  {
+    name: 'help',
+    description: 'Find useful information about cash'
+  },
+  {
     name: 'uwuify',
     type: 3
   },
@@ -43,7 +51,7 @@ const commands = [
   },
   {
     name: 'balance',
-    description: 'Displays your account balance',
+    description: 'Display your account balance',
     options: [
       {
         name: 'user',
