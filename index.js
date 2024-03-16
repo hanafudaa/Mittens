@@ -888,12 +888,6 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
 
-    const avatarData = '/Users/jude/Documents/GitHub/cash-bot/Bad.Apple!!.full.2116173.gif';
-    const avatarGif = fs.readFileSync(avatarData);
-    const avatar = Buffer.from(avatarGif);
-
-    await client.user.setAvatar(avatar);
-
     setInterval(() => {
         client.user.setActivity({ name: `${client.guilds.cache.size} servers`, type: ActivityType.Watching });
     }, 60000)
