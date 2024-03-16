@@ -42,12 +42,14 @@ const { default: owofify } = require('owoifyx');
 
 const UserProfile = require('./schemas/UserProfile');
 
-const dailyAmount = 5000;
+const dailyAmount = 10000;
 
 const date = new Date();
 const day = date.getDate();
 const month = date.getMonth() + 1;
 const year = date.getFullYear();
+
+const fs = require('node:fs');
 
 const { createAudioResource, createAudioPlayer, NoSubscriberBehavior, joinVoiceChannel, getVoiceConnection, entersState, AudioPlayerStatus, VoiceConnectionStatus, AudioPlayer } = require('@discordjs/voice');
 
@@ -340,7 +342,7 @@ client.on('interactionCreate', async (interaction) => {
 
                 var formattedAmount = amount.toLocaleString("en-US");
 
-                interaction.reply(`# 50/50\nYou gambled and lost **¥${formattedAmount}**. Unlucky!`);
+                interaction.reply(`# 50/50\nYou lost, **-¥${formattedAmount}**. __Unlucky!__`);
                 return;
             }
 
@@ -350,7 +352,7 @@ client.on('interactionCreate', async (interaction) => {
             var formattedAmount = amount.toLocaleString("en-US");
             var formattedAmountWon = amountWon.toLocaleString("en-US");
 
-            interaction.reply(`# 50/50\nYou gambled **¥${formattedAmount}** and won **¥${formattedAmountWon}**. Lucky!`);
+            interaction.reply(`# 50/50\nYou won, **+¥${formattedAmountWon}**. __Lucky!__`);
         } catch (err) {
             console.log('error handling /50-50 - ' + err);
         }
@@ -885,6 +887,12 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
 
 client.once('ready', async () => {
     console.log(`${client.user.username} is online`)
+
+    const avatarData = '/Users/jude/Documents/GitHub/cash-bot/Bad.Apple!!.full.2116173.gif';
+    const avatarGif = fs.readFileSync(avatarData);
+    const avatar = Buffer.from(avatarGif);
+
+    await client.user.setAvatar(avatar);
 
     setInterval(() => {
         client.user.setActivity({ name: `${client.guilds.cache.size} servers`, type: ActivityType.Watching });
