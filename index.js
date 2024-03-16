@@ -339,7 +339,7 @@ client.on('interactionCreate', async (interaction) => {
                 return;
             }
 
-            const didWin = Math.random() > 0.55; // 45% chance to win
+            const didWin = Math.random() > 0.50; // 50% chance to win
 
             if (!didWin) {
                 userProfile.balance -= amount;
@@ -406,8 +406,6 @@ client.on('interactionCreate', async (interaction) => {
 
         const targetMember = interaction.guild.members.cache.get(targetUserId);
 
-        await interaction.deferReply();
-
         try {
             let userProfile = await UserProfile.findOne({ userid: targetUserId });
 
@@ -419,12 +417,14 @@ client.on('interactionCreate', async (interaction) => {
             var formattedBalance = balanceAmount.toLocaleString("en-US");
 
 
-            if (targetMember.user.id === client.user.id) return interaction.editReply({ content: `**${targetMember.user.displayName}'s** account balance is **-¥${formattedBalance}**.` })
-            if (targetMember.user.bot) return interaction.editReply({ content: 'You can\'t see a bot\'s balance' })
+            if (targetMember.user.id === client.user.id) return interaction.reply({ content: `**${targetMember.user.displayName}'s** account balance is **-¥${formattedBalance}**.` })
+            if (targetMember.user.bot) return interaction.reply({ content: 'You can\'t see a bot\'s balance' })
 
-            interaction.editReply(
-                targetUserId === interaction.user.id ? `Your account balance is **¥${formattedBalance}**.` : `**${targetMember.user.displayName}'s** account balance is **¥${formattedBalance}**.`
-            )
+            if (targetUserId === interaction.user.id) {
+                interaction.reply({ content: `Your account balance is **¥${formattedBalance}**.`, ephemeral: true });
+            } else {
+                interaction.reply(`**${targetMember.user.displayName}'s** account balance is **¥${formattedBalance}**.`)
+            }
         } catch (error) {
             console.log(`error handling /balance: ${error}`);
         }
