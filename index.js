@@ -44,7 +44,9 @@ const UserProfile = require('./schemas/UserProfile');
 
 const dollarColor = 'd1dfba';
 const pricelessColor = '8db6ff';
+const richestColor = '7ac971';
 const expensiveColor = 'ffc2f8';
+const testerColor = 'ffa7a7';
 const memberColor = 'ffd7a9';
 
 const dailyAmount = 10000;
@@ -112,11 +114,13 @@ app.listen(config.port, () => console.log(`App listening at https://hanafudaa.gi
 
 client.on('interactionCreate', async (interaction) => {
 
-    const myGuild = client.guilds.cache.get(interaction.guild.id)
+    const myGuild = client.guilds.cache.get(config.server);
     const person = `${interaction.member.user.id}`;
     if (!myGuild.members.cache.get(person)) return;
     const hasMember = (await myGuild.members.fetch(person)).roles.cache.has('1211647374196351047');
+    const testerMember = (await myGuild.members.fetch(person)).roles.cache.has('1218695989523910737');
     const expensiveMember = (await myGuild.members.fetch(person)).roles.cache.has('1139696070994186363');
+    const richestMember = (await myGuild.members.fetch(person)).roles.cache.has('1218721611478339715');
     const pricelessMember = (await myGuild.members.fetch(person)).roles.cache.has('1214167713073725502');
     const dollarMember = (await myGuild.members.fetch(person)).roles.cache.has('1194371950886256670');
 
@@ -315,45 +319,17 @@ client.on('interactionCreate', async (interaction) => {
         interaction.reply(owoified).catch((err) => console.error(err));
     }
 
-    if (interaction.commandName === 'rank') { // depending on what rank they have the get a special color for each embed message command they create using cash
+    if (interaction.commandName === 'profile') { // depending on what rank they have the get a special color for each embed message command they create using cash
         try {
 
-            let userProfile = await UserProfile.findOne({
-                userid: interaction.user.id,
-            });
-
-            if (!userProfile) {
-                userProfile = new UserProfile({
-                    userid: interaction.user.id,
-                });
-            }
-
-            if (userProfile.rank === 0) {
-                interaction.reply({ content: `# unranked\nYou don't have a rank.`, ephemeral: true });
-                return;
-            }
-
-            if (userProfile.rank === 1) {
-                const memberRankEmbed = new EmbedBuilder()
-                    .setColor(memberColor)
-                    .setDescription(`# member\nYou are a cherished member!`)
-                interaction.reply({ embeds: [memberRankEmbed] });
-            }
-
-            if (userProfile.rank === 2) {
-                const expensiveRankEmbed = new EmbedBuilder()
-                    .setColor(expensiveColor)
-                    .setDescription(`# expensive\nhai hai <${interaction.user.id}>!`)
-                interaction.reply({ embeds: [memberRankEmbed] });
-            }
 
         } catch (err) {
-            console.log('error handling /rank - ' + err);
+            console.log('error handling /profile - ' + err);
         }
     }
 
     if (interaction.commandName === 'help') {
-        interaction.reply({ content: `*Go to* **[website](https://hanafudaa.github.io/cash-bot/)** to seek __information__ on **cash**.`, ephemeral: true });
+        interaction.reply({ content: `*Go to* **[website](https://hanafudaa.github.io/cash-bot/)** to seek __information__ on **cash**.`, ephemeral: true }).catch((err) => console.log(err));
     }
 
     if (interaction.commandName === '50-50') {
@@ -363,7 +339,7 @@ client.on('interactionCreate', async (interaction) => {
 
         try {
             if (amount < 50) {
-                interaction.reply({ content: 'You must gamble atleast **¥50**' })
+                interaction.reply({ content: 'You must gamble atleast **¥50**', ephemeral: true });
                 return;
             }
 
@@ -390,7 +366,28 @@ client.on('interactionCreate', async (interaction) => {
 
                 var formattedAmount = amount.toLocaleString("en-US");
 
-                interaction.reply(`# 50/50\nYou lost, **-¥${formattedAmount}**. __Unlucky!__`);
+                const no50 = new EmbedBuilder()
+                    .setDescription(`# 50/50\nYou lost, **-¥${formattedAmount}**. __Unlucky!__`)
+                if (dollarMember) {
+                    no50.setColor(dollarColor)
+                } else {
+                    if (pricelessMember) {
+                        no50.setColor(pricelessColor)
+                    } else {
+                        if (expensiveMember) {
+                            no50.setColor(expensiveColor)
+                        } else {
+                            if (testerMember) {
+                                no50.setColor(testerColor)
+                            } else {
+                                if (hasMember) {
+                                    no50.setColor(memberColor)
+                                }
+                            }
+                        }
+                    }
+                }
+                interaction.reply({ embeds: [no50] });
                 return;
             }
 
@@ -400,7 +397,28 @@ client.on('interactionCreate', async (interaction) => {
             var formattedAmount = amount.toLocaleString("en-US");
             var formattedAmountWon = amountWon.toLocaleString("en-US");
 
-            interaction.reply(`# 50/50\nYou won, **+¥${formattedAmountWon}**. __Lucky!__`);
+            const yes50 = new EmbedBuilder()
+                .setDescription(`# 50/50\nYou won, **+¥${formattedAmountWon}**. __Lucky!__`)
+            if (dollarMember) {
+                yes50.setColor(dollarColor)
+            } else {
+                if (pricelessMember) {
+                    yes50.setColor(pricelessColor)
+                } else {
+                    if (expensiveMember) {
+                        yes50.setColor(expensiveColor)
+                    } else {
+                        if (testerMember) {
+                            yes50.setColor(testerColor)
+                        } else {
+                            if (hasMember) {
+                                yes50.setColor(memberColor)
+                            }
+                        }
+                    }
+                }
+            }
+            interaction.reply({ embeds: [yes50] });
         } catch (err) {
             console.log('error handling /50-50 - ' + err);
         }
@@ -427,50 +445,22 @@ client.on('interactionCreate', async (interaction) => {
             const didWin = Math.random() > 0.66; // 33% chance to win
 
             if (!didWin) {
-                userProfile.balance /= 2;
+                userProfile.balance /= 3;
                 await userProfile.save();
 
                 const lostDeal = new EmbedBuilder()
-                    .setDescription(`# DEAL WITH THE DEVIL\n__You lost half your money!__`);
-                if (dollarMember) {
-                    lostDeal.setColor(dollarColor)
-                } else {
-                    if (pricelessMember) {
-                        lostDeal.setColor(pricelessColor)
-                    } else {
-                        if (expensiveMember) {
-                            lostDeal.setColor(expensiveColor)
-                        } else {
-                            if (hasMember) {
-                                lostDeal.setColor(memberColor)
-                            }
-                        }
-                    }
-                }
+                    .setDescription(`# DEAL WITH THE DEVIL \nYou now have a third of the money that you started with.`)
+                    .setColor('Red')
                 interaction.reply({ embeds: [lostDeal] });
                 return;
             }
 
-            userProfile.balance *= 2;
+            userProfile.balance *= 5;
             await userProfile.save();
 
             const wonDeal = new EmbedBuilder()
-                .setDescription(`# DEAL WITH THE DEVIL\n__You doubled your money!__`);
-                if (dollarMember) {
-                    wonDeal.setColor(dollarColor)
-                } else {
-                    if (pricelessMember) {
-                        wonDeal.setColor(pricelessColor)
-                    } else {
-                        if (expensiveMember) {
-                            wonDeal.setColor(expensiveColor)
-                        } else {
-                            if (hasMember) {
-                                wonDeal.setColor(memberColor)
-                            }
-                        }
-                    }
-                }
+                .setDescription(`# DEAL WITH THE DEVIL\nYou won **5x** your money!`)
+                .setColor('Red')
             interaction.reply({ embeds: [wonDeal] });
         } catch (err) {
             console.log('error handling /deal-with-the-devil - ' + err);
@@ -494,7 +484,7 @@ client.on('interactionCreate', async (interaction) => {
             var formattedBalance = balanceAmount.toLocaleString("en-US");
 
             const yourBalanceEmbed = new EmbedBuilder()
-            .setDescription(`**${targetMember.user.displayName}'s** account balance is **-¥${formattedBalance}**.`)
+                .setDescription(`**${targetMember.user.displayName}'s** account balance is **¥${formattedBalance}**.`)
             if (dollarMember) {
                 yourBalanceEmbed.setColor(dollarColor)
             } else {
@@ -504,15 +494,19 @@ client.on('interactionCreate', async (interaction) => {
                     if (expensiveMember) {
                         yourBalanceEmbed.setColor(expensiveColor)
                     } else {
-                        if (hasMember) {
-                            yourBalanceEmbed.setColor(memberColor)
+                        if (testerMember) {
+                            yourBalanceEmbed.setColor(testerColor)
+                        } else {
+                            if (hasMember) {
+                                yourBalanceEmbed.setColor(memberColor)
+                            }
                         }
                     }
                 }
             }
 
             const myBalanceEmbed = new EmbedBuilder()
-            .setDescription(`<@${interaction.user.id}> account balance is **¥${formattedBalance}**.`)
+                .setDescription(`<@${interaction.user.id}> account balance is **¥${formattedBalance}**.`)
             if (dollarMember) {
                 myBalanceEmbed.setColor(dollarColor)
             } else {
@@ -522,8 +516,12 @@ client.on('interactionCreate', async (interaction) => {
                     if (expensiveMember) {
                         myBalanceEmbed.setColor(expensiveColor)
                     } else {
-                        if (hasMember) {
-                            myBalanceEmbed.setColor(memberColor)
+                        if (testerMember) {
+                            myBalanceEmbed.setColor(testerColor)
+                        } else {
+                            if (hasMember) {
+                                myBalanceEmbed.setColor(memberColor)
+                            }
                         }
                     }
                 }
@@ -545,7 +543,6 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'daily') {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         try {
-            await interaction.deferReply();
 
             let userProfile = await UserProfile.findOne({
                 userid: interaction.member.id,
@@ -556,7 +553,7 @@ client.on('interactionCreate', async (interaction) => {
                 const currenDate = new Date().toDateString();
 
                 if (lastDailyDate === currenDate) {
-                    interaction.editReply('You have already claimed your daily reward for today. Try again tomorrow.').catch((err) => console.error(err));
+                    interaction.reply({ content: 'You have already claimed your daily reward for today. Try again tomorrow.', ephemeral: true }).catch((err) => console.error(err));
                     return;
                 }
             } else {
@@ -572,9 +569,7 @@ client.on('interactionCreate', async (interaction) => {
 
             var formattedDailyAmount = dailyAmount.toLocaleString("en-US");
 
-            interaction.editReply(
-                `You claimed **¥${formattedDailyAmount}** from daily reward!`
-            )
+            interaction.reply({ content: `You claimed **¥${formattedDailyAmount}** from daily reward!`, ephemeral: true });
         } catch (error) {
             console.log(`error handling /daily: ${error}`);
         }
@@ -584,9 +579,28 @@ client.on('interactionCreate', async (interaction) => {
         if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const avataruser = interaction.options.get('user').user;
         const avatarEmbed = new EmbedBuilder()
-            .setColor(config.color)
             .setTitle(`${avataruser.displayName}'s avatar`)
             .setImage(`https://cdn.discordapp.com/avatars/${avataruser.id}/${avataruser.avatar}.png?size=1024`)
+        if (dollarMember) {
+            avatarEmbed.setColor(dollarColor)
+        } else {
+            if (pricelessMember) {
+                avatarEmbed.setColor(pricelessColor)
+            } else {
+                if (expensiveMember) {
+                    avatarEmbed.setColor(expensiveColor)
+                } else {
+                    if (testerMember) {
+                        avatarEmbed.setColor(testerColor)
+                    } else {
+                        if (hasMember) {
+                            avatarEmbed.setColor(memberColor)
+                        }
+                    }
+                }
+            }
+        }
+
         interaction.reply({ embeds: [avatarEmbed] }).catch((err) => console.error(err));
     }
 
@@ -663,14 +677,44 @@ client.on('interactionCreate', async (interaction) => {
 
 client.on("messageReactionAdd", async (messageReaction, User) => {
     const guildMember = messageReaction.message.guild.members.cache.get(User.id);
+    const richestRole = messageReaction.message.guild.roles.cache.get('1218721611478339715');
+    const chatChannel = messageReaction.message.guild.channels.cache.get('1218664237497450606');
 
-    const fiveH = messageReaction.message.guild.roles.cache.get('1212804959079501834')
-    const tenH = messageReaction.message.guild.roles.cache.get('1212804778506190878')
-    const twentH = messageReaction.message.guild.roles.cache.get('1210990907461996634')
-    const thirtH = messageReaction.message.guild.roles.cache.get('1210990598266294312')
+    if (messageReaction.message.guild.id == config.server) {
+        try {
+            if (messageReaction.message.id == '1218993753046646956') { // richest
+                messageReaction.users.remove(User.id);
+
+                if (guildMember.roles.cache.has(richestRole.id)) return;
+
+                let userProfile = await UserProfile.findOne({
+                    userid: User.id,
+                });
+
+                if (!userProfile) {
+                    userProfile = new UserProfile({
+                        userid: User.id,
+                    });
+                }
+
+                if (userProfile.balance < 1000000000000) {
+                    return;
+                } else {
+                    userProfile.balance -= 1000000000000;
+                    userProfile.save();
+                    await guildMember.roles.add(richestRole.id).then(chatChannel.send(`## ${User} just bought richest rank!`))
+                }
+            }
+        } catch (err) {
+            console.log('error handling richest reaction - ' + err)
+        }
+    }
+
+    const thirtH = messageReaction.message.guild.roles.cache.get('1218895720883421254')
 
     const fiveB = messageReaction.message.guild.roles.cache.get('1212805029774229635')
     const tenB = messageReaction.message.guild.roles.cache.get('1212804387198472232')
+    const teeB = messageReaction.message.guild.roles.cache.get('1218894825756299264')
     const twentB = messageReaction.message.guild.roles.cache.get('1212792247263830036')
     const thirtB = messageReaction.message.guild.roles.cache.get('1212792260744192071')
 
@@ -678,26 +722,14 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 
     if (messageReaction.message.guild.id == '1199088499647852695') { // spider familia
         try {
-            if (messageReaction.message.id == '1213102823156351006') { // marine
+            if (messageReaction.message.id == '1218906394045055006') { // marine
                 messageReaction.users.remove(User.id);
-                if (messageReaction.emoji.name == '🛡️') {
-                    guildMember.roles.add(fiveH.id).catch((err) => console.log(err));
-                    if (guildMember.roles.cache.has(fiveH.id)) return guildMember.roles.remove(fiveH.id).catch((err) => console.log(err));
-                }
-                if (messageReaction.emoji.name == '⚔️') {
-                    guildMember.roles.add(tenH.id).catch((err) => console.log(err));
-                    if (guildMember.roles.cache.has(tenH.id)) return guildMember.roles.remove(tenH.id).catch((err) => console.log(err));
-                }
-                if (messageReaction.emoji.name == '🗿') {
-                    guildMember.roles.add(twentH.id).catch((err) => console.log(err));
-                    if (guildMember.roles.cache.has(twentH.id)) return guildMember.roles.remove(twentH.id).catch((err) => console.log(err));
-                }
-                if (messageReaction.emoji.name == '💎') {
+                if (messageReaction.emoji.name == '💯') {
                     guildMember.roles.add(thirtH.id).catch((err) => console.log(err));
                     if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id).catch((err) => console.log(err));
                 }
             }
-            if (messageReaction.message.id == '1213102818160812062') { // pirate
+            if (messageReaction.message.id == '1218906376844218400') { // pirate
                 messageReaction.users.remove(User.id);
                 if (messageReaction.emoji.name == '🛡️') {
                     guildMember.roles.add(fiveB.id).catch((err) => console.log(err));
@@ -706,6 +738,10 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
                 if (messageReaction.emoji.name == '⚔️') {
                     guildMember.roles.add(tenB.id).catch((err) => console.log(err));
                     if (guildMember.roles.cache.has(tenB.id)) return guildMember.roles.remove(tenB.id).catch((err) => console.log(err));
+                }
+                if (messageReaction.emoji.name == '👻') {
+                    guildMember.roles.add(teeB.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(teeB.id)) return guildMember.roles.remove(teeB.id).catch((err) => console.log(err));
                 }
                 if (messageReaction.emoji.name == '🗿') {
                     guildMember.roles.add(twentB.id).catch((err) => console.log(err));
@@ -716,7 +752,7 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
                     if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id).catch((err) => console.log(err));
                 }
             }
-            if (messageReaction.message.id == '1213102826948001792') { // crew
+            if (messageReaction.message.id == '1218906367369285642') { // crew
                 messageReaction.users.remove(User.id);
                 guildMember.roles.add(crewRole.id).catch((err) => console.log(err));
                 if (guildMember.roles.cache.has(crewRole.id)) return guildMember.roles.remove(crewRole).catch((err) => console.log(err));
@@ -730,8 +766,6 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('messageCreate', async (message) => {
-
-    if (message.content.includes('gg/')) return message.delete().catch((err) => console.log(err));
 
     if (message.author.bot) return; // if a bot creates a message client will return
 
@@ -750,7 +784,39 @@ client.on('messageCreate', async (message) => {
             const applyEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setDescription('## React to gain access to the server.')
-                ; (await message.channel.send({ embeds: [applyEmbed] })).react('🤍')
+                ; (await (await message.channel.send({ embeds: [applyEmbed] })).react('🤍'))
+            break;
+
+        case 'pirate':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const pirateEmbed = new EmbedBuilder()
+                .setDescription(`## How much bounty do you have?\n**- 🛡️ 5m\n- ⚔️ 10m\n- 👻 15m\n- 🗿 20m\n- 💎 30m**`)
+                .setColor('Red')
+            const pirateMessage = await message.channel.send({ embeds: [pirateEmbed] });
+            await pirateMessage.react('🛡️')
+            await pirateMessage.react('⚔️')
+            await pirateMessage.react('👻')
+            await pirateMessage.react('🗿')
+            await pirateMessage.react('💎')
+            break;
+
+        case 'marine':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const marineEmbed = new EmbedBuilder()
+                .setDescription(`## Do you have 30/30 honour and bounty?\n**- 💯 30/30m**`)
+                .setColor('Blurple')
+                ; (await message.channel.send({ embeds: [marineEmbed] })).react('💯')
+            break;
+
+        case 'crew':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const crewEmbed = new EmbedBuilder()
+                .setDescription(`## Become part of the crew!`)
+                .setColor('a0d60c')
+                ; (await message.channel.send({ embeds: [crewEmbed] })).react('<:1046829394263552021:1213653837873807410>')
             break;
 
         case 'join':
@@ -766,52 +832,33 @@ client.on('messageCreate', async (message) => {
                 ; (await message.channel.send({ embeds: [tojoinEmbed] })).react('💨')
             break;
 
-        case 'rank':
+        case 'richest':
             if (message.author.id !== config.master) return;
-            if (message.guild.id !== config.server) return;
             message.delete();
-            const memberRank = message.guild.members.cache.filter(member => member.roles.cache.has('1211647374196351047')) // member role
-
-            const memberMembers = message.guild.members.cache.filter(member => member.roles.cache.has('1211647374196351047'));
-            memberMembers.forEach(member => {
-                let userProfile = UserProfile.findOne({
-                    userid: member.user.id,
-                });
-
-                if (!userProfile) {
-                    userProfile = new UserProfile({
-                        userid: member.user.id,
-                    });
-                }
-                if (userProfile.rank == 0) {
-                    userProfile.rank + 1;
-                    userProfile.save();
-                }
-            });
-
-            if (memberRank) {
-                message.channel.send('test')
-            } else {
-                message.channel.send('unranked')
-            }
+            const richestEmbed = new EmbedBuilder()
+                .setDescription('**Would you like to buy <@&1218721611478339715> for ¥1,000,000,000,000?** ')
+                .setColor(richestColor)
+                ; (await message.channel.send({ embeds: [richestEmbed] })).react('✅')
             break;
 
         case 'info':
             if (message.author.id !== config.master) return;
             message.delete();
             const infoEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setDescription(`# Information on 1 - 800\n- __Rules:__
+                .setColor('White')
+                .setDescription(`# Information\n- __Rules:__
             \n - **[Terms of Service](https://discord.com/terms)**
             \n - **[Guidelines](https://discord.com/guidelines)**
             \n - **No begging, spamming or self-promo**
             \n- __Ranks:__
-            \n - **<@&1214167713073725502>**
-            \n - **<@&1139696070994186363>**
-            \n - **<@&1211647374196351047>**
+            \n - **<@&1214167713073725502>** *(Unobtainable)*
+            \n - **<@&1218721611478339715>** *(<#1218720242117771375>)*
+            \n - **<@&1139696070994186363>** *(Boost the server)*
+            \n - **<@&1218695989523910737>** *(Become a tester)*
+            \n - **<@&1211647374196351047>** *(GIven when joining)*
             `)
                 .setImage('https://cdn.discordapp.com/attachments/1023651956767600640/1159602377691758693/whitecat.gif')
-                .setFooter({ text: `Residence of cash - bot.` })
+                .setFooter({ text: `If you leave the server you lose your rank.` })
             message.channel.send({ embeds: [infoEmbed] });
             break;
 
@@ -959,11 +1006,7 @@ client.on('guildMemberAdd', async (member) => {
     }
     */
 
-    let banUsers = ['1040726659789246564']
-
-    if (banUsers.includes(member.user.id)) {
-        member.ban();
-    }
+    let blacklist = ['1040726659789246564']
 
     if (member.guild.id === config.server) {
         const memberRole = member.guild.roles.cache.get('1211647374196351047');
@@ -971,17 +1014,12 @@ client.on('guildMemberAdd', async (member) => {
     }
 
     if (member.guild.id === '1199088499647852695') {
+        if (blacklist.includes(member.user.id)) {
+            await member.ban();
+        }
         let membersChannel = member.guild.channels.cache.get('1217588185216061490')
         membersChannel.setName(`Members: ${member.guild.memberCount}`)
     }
-
-    if (member.user.bot == true) return;
-    const enterEmbed = new EmbedBuilder()
-        .setColor(config.color)
-        .setDescription(`${member.id}, ${member.user.username}, ${member} has joined ${member.guild.name} on:\n${member.joinedAt}`)
-        .setImage(`https://cdn.discordapp.com/avatars/${member.id}/${member.user.avatar}.png?size=1024`)
-
-    enter_exit_wh.send({ embeds: [enterEmbed] }).catch((err) => console.log(err));
 });
 
 client.on('guildMemberRemove', async (member) => {
@@ -989,12 +1027,6 @@ client.on('guildMemberRemove', async (member) => {
         let membersChannel = member.guild.channels.cache.get('1217588185216061490')
         membersChannel.setName(`Members: ${member.guild.memberCount}`)
     }
-
-    if (member.user.bot == true) return;
-    const exitEmbed = new EmbedBuilder()
-        .setColor(config.color)
-        .setDescription(`${member.id}, ${member.user.username}, ${member} has left ${member.guild.name}`)
-    enter_exit_wh.send({ embeds: [exitEmbed] }).catch((err) => console.log(err));
 });
 
 client.on('error', async (error) => { console.log(error) });
@@ -1014,26 +1046,11 @@ client.once('ready', async () => {
     }, 60000)
 });
 
-client.on('guildCreate', async (guild) => {
-    const owner = guild.members.cache.get(guild.ownerId)
-    try {
-        const fetchInvites = (await guild.invites.fetch()).map(invite => invite.url + '\n')
-        bot_enter_exit_wh.send({ content: `${client.user.username} has joined **${guild.name}** ||${guild.id}||, Owner: ${owner.user.username} ||${owner.user.id}||\nSize: ${guild.memberCount}\n# Invite codes:\n${fetchInvites}` })
-    } catch (err) {
-        console.log(`error guildCreate event - ${err}`)
-    }
-});
-
-client.on('guildDelete', async (guild) => {
-    const owner = guild.members.cache.get(guild.ownerId)
-    bot_enter_exit_wh.send({ content: `${client.user.username} has left **${guild.name}** ||${guild.id}|| , owner: ${owner.user.username} ||${owner.user.id}||` })
-});
-
 client.on('voiceStateUpdate', async (oldState, newState) => {
     if (oldState.channelId == newState.channelId) return; // if the user makes any voice update return
     const theChannel = newState.guild.channels.cache.find(channel => channel.name === `${oldState.member.user.displayName}'s channel`);
-    if (newState.channelId == '1138159914678755459') {
-        const myChannel = await newState.guild.channels.create({ name: `${newState.member.user.displayName}'s channel`, type: ChannelType.GuildVoice, parent: '1138159872853164212' });
+    if (newState.channelId == '1218717360983113728') {
+        const myChannel = await newState.guild.channels.create({ name: `${newState.member.user.displayName}'s channel`, type: ChannelType.GuildVoice, parent: '1218717263558082610' });
         await newState.member.voice.setChannel(myChannel).catch((err) => console.error(err));
     };
     if (oldState.channel == theChannel) {

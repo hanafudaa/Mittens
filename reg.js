@@ -6,8 +6,16 @@ const { application } = require('express');
 
 const commands = [
   {
-    name: 'rank',
-    description: 'Display your rank'
+    name: 'profile',
+    description: 'Display your cash profile',
+    options: [
+      {
+        name: 'user',
+        description: 'Display specfic user\'s cash profile',
+        type: ApplicationCommandOptionType.User,
+        required: false,
+      },
+    ],
   },
   {
     name: 'help',
@@ -187,7 +195,7 @@ const exclusivecommands = [
   },
   {
     name: 'deal-with-the-devil',
-    description: 'You have a 1/3 chance to win and double your money, or lose half',
+    description: '33% chance to win 5x your money, Lose and you end up with 1/3 of your balance',
   }
 ];
 
