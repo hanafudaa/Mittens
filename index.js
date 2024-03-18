@@ -1,4 +1,4 @@
-const { Client, Events, hyperlink, ReactionEmoji, ReactionCollector, ReactionManager, ReactionUserManager, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent, Colors, DMChannel, MessageReaction } = require('discord.js');
+const { Client, Events, hyperlink, ReactionEmoji, ReactionCollector, ReactionManager, ReactionUserManager, hideLinkEmbed, GatewayIntentBits, WebhookClient, EmbedBuilder, PermissionsBitField, ButtonBuilder, ButtonStyle, ActionRowBuilder, ActivityType, Activity, TextChannel, Options, Presence, Partials, Message, ChannelType, CategoryChannel, ButtonInteraction, InteractionResponse, Webhook, GuildMember, AutoModerationRule, Collection, ButtonComponent, Colors, DMChannel, MessageReaction, embedLength } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -43,6 +43,7 @@ const { default: owofify } = require('owoifyx');
 const UserProfile = require('./schemas/UserProfile');
 
 const dollarColor = 'd1dfba';
+const friendColor = 'fafafa';
 const pricelessColor = '8db6ff';
 const richestColor = '7ac971';
 const expensiveColor = 'ffc2f8';
@@ -122,6 +123,7 @@ client.on('interactionCreate', async (interaction) => {
     const expensiveMember = (await myGuild.members.fetch(person)).roles.cache.has('1139696070994186363');
     const richestMember = (await myGuild.members.fetch(person)).roles.cache.has('1218721611478339715');
     const pricelessMember = (await myGuild.members.fetch(person)).roles.cache.has('1214167713073725502');
+    const friendMember = (await myGuild.members.fetch(person)).roles.cache.has('1219006967121711114');
     const dollarMember = (await myGuild.members.fetch(person)).roles.cache.has('1194371950886256670');
 
     const confirm = new ButtonBuilder()
@@ -269,6 +271,14 @@ client.on('interactionCreate', async (interaction) => {
         const user = interaction.options.get('user').user;
         const amount = interaction.options.getNumber('amount');
 
+        var result = (amount - Math.floor(amount)) !== 0;
+
+        if (result) {
+            interaction.reply({ content: `You can\'t transfer a number with a decimal.`, ephemeral: true }).catch((err) => console.log(err))
+        } else {
+        console.log('It is a whole number.');
+        }
+
         let userProfile = await UserProfile.findOne({
             userid: user.id,
         });
@@ -289,14 +299,16 @@ client.on('interactionCreate', async (interaction) => {
             });
         }
 
-        if (user.bot) return interaction.reply({ content: 'You can\'t transfer your money to a bot', ephemeral: true });
+        if (interaction.user.id == user.id) return interaction.reply({ content: `You can\'t transfer money to yourself.`, ephemeral: true });
+
+        if (user.bot) return interaction.reply({ content: 'You can\'t transfer your money to a bot.', ephemeral: true });
 
         if (amount > AuthorUser.balance) {
             interaction.reply({ content: `You don't have enough money to transfer this much.`, ephemeral: true });
             return;
         }
 
-        if (amount <= 0) return interaction.reply({ content: 'Please enter an amount greater than zero', ephemeral: true });
+        if (amount < 50) return interaction.reply({ content: 'You must transfer atleast **¥50**.', ephemeral: true });
 
         try {
             AuthorUser.balance -= amount;
@@ -306,7 +318,36 @@ client.on('interactionCreate', async (interaction) => {
 
             var formattedAmount = amount.toLocaleString("en-US");
 
-            return interaction.reply(`# TRANSFER\nSuccessfully transferred **¥${formattedAmount}** to **${user.displayName}**`)
+            const transferEmbed = new EmbedBuilder()
+                .setDescription(`# TRANSFER\nSuccessfully transferred **¥${formattedAmount}** to **${user.displayName}**.`)
+            if (dollarMember) {
+                transferEmbed.setColor(dollarColor)
+            } else {
+                if (friendMember) {
+                    transferEmbed.setColor(friendColor)
+                } else {
+                    if (pricelessMember) {
+                        transferEmbed.setColor(pricelessColor)
+                    } else {
+                        if (richestMember) {
+                            transferEmbed.setColor(richestColor)
+                        } else {
+                            if (expensiveMember) {
+                                transferEmbed.setColor(expensiveColor)
+                            } else {
+                                if (testerMember) {
+                                    transferEmbed.setColor(testerColor)
+                                } else {
+                                    if (hasMember) {
+                                        transferEmbed.setColor(memberColor)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return interaction.reply({ embeds: [transferEmbed] });
 
         } catch (error) {
             console.log('error handling /transfer command ' + error);
@@ -367,9 +408,12 @@ client.on('interactionCreate', async (interaction) => {
                 var formattedAmount = amount.toLocaleString("en-US");
 
                 const no50 = new EmbedBuilder()
-                    .setDescription(`# 50/50\nYou lost, **-¥${formattedAmount}**. __Unlucky!__`)
-                    if (dollarMember) {
-                        no50.setColor(dollarColor)
+                    .setDescription(`# 50/50\nYou lost **¥${formattedAmount}**. __Unlucky!__`)
+                if (dollarMember) {
+                    no50.setColor(dollarColor)
+                } else {
+                    if (friendMember) {
+                        no50.setColor(friendColor)
                     } else {
                         if (pricelessMember) {
                             no50.setColor(pricelessColor)
@@ -391,6 +435,7 @@ client.on('interactionCreate', async (interaction) => {
                             }
                         }
                     }
+                }
                 interaction.reply({ embeds: [no50] });
                 return;
             }
@@ -402,9 +447,12 @@ client.on('interactionCreate', async (interaction) => {
             var formattedAmountWon = amountWon.toLocaleString("en-US");
 
             const yes50 = new EmbedBuilder()
-                .setDescription(`# 50/50\nYou won, **+¥${formattedAmountWon}**. __Lucky!__`)
-                if (dollarMember) {
-                    yes50.setColor(dollarColor)
+                .setDescription(`# 50/50\nYou won **¥${formattedAmountWon}**. __Lucky!__`)
+            if (dollarMember) {
+                yes50.setColor(dollarColor)
+            } else {
+                if (friendMember) {
+                    yes50.setColor(friendColor)
                 } else {
                     if (pricelessMember) {
                         yes50.setColor(pricelessColor)
@@ -426,6 +474,7 @@ client.on('interactionCreate', async (interaction) => {
                         }
                     }
                 }
+            }
             interaction.reply({ embeds: [yes50] });
         } catch (err) {
             console.log('error handling /50-50 - ' + err);
@@ -493,8 +542,11 @@ client.on('interactionCreate', async (interaction) => {
 
             const yourBalanceEmbed = new EmbedBuilder()
                 .setDescription(`**${targetMember.user.displayName}'s** account balance is **¥${formattedBalance}**.`)
-                if (dollarMember) {
-                    yourBalanceEmbed.setColor(dollarColor)
+            if (dollarMember) {
+                yourBalanceEmbed.setColor(dollarColor)
+            } else {
+                if (friendMember) {
+                    yourBalanceEmbed.setColor(friendColor)
                 } else {
                     if (pricelessMember) {
                         yourBalanceEmbed.setColor(pricelessColor)
@@ -516,11 +568,15 @@ client.on('interactionCreate', async (interaction) => {
                         }
                     }
                 }
+            }
 
             const myBalanceEmbed = new EmbedBuilder()
-                .setDescription(`<@${interaction.user.id}> account balance is **¥${formattedBalance}**.`)
-                if (dollarMember) {
-                    myBalanceEmbed.setColor(dollarColor)
+                .setDescription(`**<@${interaction.user.id}>'s** account balance is **¥${formattedBalance}**.`)
+            if (dollarMember) {
+                myBalanceEmbed.setColor(dollarColor)
+            } else {
+                if (friendMember) {
+                    myBalanceEmbed.setColor(friendColor)
                 } else {
                     if (pricelessMember) {
                         myBalanceEmbed.setColor(pricelessColor)
@@ -542,7 +598,8 @@ client.on('interactionCreate', async (interaction) => {
                         }
                     }
                 }
-        
+            }
+
             if (targetMember.user.id === client.user.id) return interaction.reply({ embeds: [yourBalanceEmbed] });
             if (targetMember.user.bot) return interaction.reply({ content: 'You can\'t see a bot\'s balance', ephemeral: true });
 
@@ -600,20 +657,24 @@ client.on('interactionCreate', async (interaction) => {
         if (dollarMember) {
             avatarEmbed.setColor(dollarColor)
         } else {
-            if (pricelessMember) {
-                avatarEmbed.setColor(pricelessColor)
+            if (friendMember) {
+                avatarEmbed.setColor(friendColor)
             } else {
-                if (richestMember) {
-                    avatarEmbed.setColor(richestColor)
+                if (pricelessMember) {
+                    avatarEmbed.setColor(pricelessColor)
                 } else {
-                    if (expensiveMember) {
-                        avatarEmbed.setColor(expensiveColor)
+                    if (richestMember) {
+                        avatarEmbed.setColor(richestColor)
                     } else {
-                        if (testerMember) {
-                            avatarEmbed.setColor(testerColor)
+                        if (expensiveMember) {
+                            avatarEmbed.setColor(expensiveColor)
                         } else {
-                            if (hasMember) {
-                                avatarEmbed.setColor(memberColor)
+                            if (testerMember) {
+                                avatarEmbed.setColor(testerColor)
+                            } else {
+                                if (hasMember) {
+                                    avatarEmbed.setColor(memberColor)
+                                }
                             }
                         }
                     }
@@ -879,6 +940,7 @@ client.on('messageCreate', async (message) => {
             \n - **[Guidelines](https://discord.com/guidelines)**
             \n - **No begging, spamming or self-promo**
             \n- __Ranks:__
+            \n - **<@&1219006967121711114>** *(Reserved)*
             \n - **<@&1214167713073725502>** *(Put \`.gg/hMKAAN6YwU\` in your status)*
             \n - **<@&1218721611478339715>** *(<#1218720242117771375>)*
             \n - **<@&1139696070994186363>** *(Boost the server)*
