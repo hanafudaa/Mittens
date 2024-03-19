@@ -42,7 +42,7 @@ const { default: owofify } = require('owoifyx');
 
 const UserProfile = require('./schemas/UserProfile');
 
-const dollarColor = 'd1dfba';
+const dollarColor = 'a83a39';
 const friendColor = 'fafafa';
 const pricelessColor = '8db6ff';
 const richestColor = '7ac971';
