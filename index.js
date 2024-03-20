@@ -541,7 +541,7 @@ client.on('interactionCreate', async (interaction) => {
             var formattedBalance = balanceAmount.toLocaleString("en-US");
 
             const yourBalanceEmbed = new EmbedBuilder()
-                .setDescription(`**${targetMember.user.displayName}'s** account balance is **¥${formattedBalance}**.`)
+                .setDescription(`**${targetMember.user.displayName}'s** account balance is **¥${formattedBalance}**`)
             if (dollarMember) {
                 yourBalanceEmbed.setColor(dollarColor)
             } else {
@@ -571,7 +571,7 @@ client.on('interactionCreate', async (interaction) => {
             }
 
             const myBalanceEmbed = new EmbedBuilder()
-                .setDescription(`**<@${interaction.user.id}>'s** account balance is **¥${formattedBalance}**.`)
+                .setDescription(`**<@${interaction.user.id}>'s** account balance is **¥${formattedBalance}**`)
             if (dollarMember) {
                 myBalanceEmbed.setColor(dollarColor)
             } else {
