@@ -259,7 +259,7 @@ client.on('interactionCreate', async (interaction) => {
             player.on(AudioPlayerStatus.Idle, (oldState, newState) => {
                 console.log('Audio player is in the idle state!');
                 player.stop();
-                if (connection !== null) return getConnection.destroy();
+                if (!connection) return;
             });
         } catch (error) {
             console.log(`error handling /play command ${error}`)
@@ -1093,14 +1093,14 @@ client.on('guildMemberAdd', async (member) => {
         if (blacklist.includes(member.user.id)) {
             await member.ban();
         }
-        let membersChannel = member.guild.channels.cache.get('1217588185216061490')
+        let membersChannel = member.guild.channels.cache.get('1220860307501617202')
         membersChannel.setName(`Members: ${member.guild.memberCount}`)
     }
 });
 
 client.on('guildMemberRemove', async (member) => {
     if (member.guild.id === '1199088499647852695') {
-        let membersChannel = member.guild.channels.cache.get('1217588185216061490')
+        let membersChannel = member.guild.channels.cache.get('1220860307501617202')
         membersChannel.setName(`Members: ${member.guild.memberCount}`)
     }
 });
