@@ -276,7 +276,7 @@ client.on('interactionCreate', async (interaction) => {
         if (result) {
             interaction.reply({ content: `You can\'t transfer a number with a decimal.`, ephemeral: true }).catch((err) => console.log(err))
         } else {
-        console.log('It is a whole number.');
+            console.log('It is a whole number.');
         }
 
         let userProfile = await UserProfile.findOne({
@@ -791,26 +791,20 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
         }
     }
 
-    const thirtH = messageReaction.message.guild.roles.cache.get('1218895720883421254')
-
-    const fiveB = messageReaction.message.guild.roles.cache.get('1212805029774229635')
-    const tenB = messageReaction.message.guild.roles.cache.get('1212804387198472232')
-    const teeB = messageReaction.message.guild.roles.cache.get('1218894825756299264')
-    const twentB = messageReaction.message.guild.roles.cache.get('1212792247263830036')
-    const thirtB = messageReaction.message.guild.roles.cache.get('1212792260744192071')
-
-    const crewRole = messageReaction.message.guild.roles.cache.get('1212801646388715541')
-
     if (messageReaction.message.guild.id == '1199088499647852695') { // spider familia
+
+        const fiveB = messageReaction.message.guild.roles.cache.get('1212805029774229635')
+        const tenB = messageReaction.message.guild.roles.cache.get('1212804387198472232')
+        const teeB = messageReaction.message.guild.roles.cache.get('1218894825756299264')
+        const twentB = messageReaction.message.guild.roles.cache.get('1212792247263830036')
+        const thirtB = messageReaction.message.guild.roles.cache.get('1212792260744192071')
+        const bothB = messageReaction.message.guild.roles.cache.get('1218895720883421254')
+
+        const leviRole = messageReaction.message.guild.roles.cache.get('1221157100248629370')
+
+        const crewRole = messageReaction.message.guild.roles.cache.get('1212801646388715541')
         try {
-            if (messageReaction.message.id == '1218906394045055006') { // marine
-                messageReaction.users.remove(User.id);
-                if (messageReaction.emoji.name == '💯') {
-                    guildMember.roles.add(thirtH.id).catch((err) => console.log(err));
-                    if (guildMember.roles.cache.has(thirtH.id)) return guildMember.roles.remove(thirtH.id).catch((err) => console.log(err));
-                }
-            }
-            if (messageReaction.message.id == '1218906376844218400') { // pirate
+            if (messageReaction.message.id == '1221218213497540641') { // bounty and honour
                 messageReaction.users.remove(User.id);
                 if (messageReaction.emoji.name == '🛡️') {
                     guildMember.roles.add(fiveB.id).catch((err) => console.log(err));
@@ -832,11 +826,20 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
                     guildMember.roles.add(thirtB.id).catch((err) => console.log(err));
                     if (guildMember.roles.cache.has(thirtB.id)) return guildMember.roles.remove(thirtB.id).catch((err) => console.log(err));
                 }
+                if (messageReaction.emoji.name == '💍') {
+                    guildMember.roles.add(bothB.id).catch((err) => console.log(err));
+                    if (guildMember.roles.cache.has(bothB.id)) return guildMember.roles.remove(bothB.id).catch((err) => console.log(err));
+                }
             }
-            if (messageReaction.message.id == '1218906367369285642') { // crew
+            if (messageReaction.message.id == '1221218221533696071') { // crew
                 messageReaction.users.remove(User.id);
                 guildMember.roles.add(crewRole.id).catch((err) => console.log(err));
-                if (guildMember.roles.cache.has(crewRole.id)) return guildMember.roles.remove(crewRole).catch((err) => console.log(err));
+                if (guildMember.roles.cache.has(crewRole.id)) return guildMember.roles.remove(crewRole.id).catch((err) => console.log(err));
+            }
+            if (messageReaction.message.id == '1221218231369469963') { // levi ping
+                messageReaction.users.remove(User.id);
+                guildMember.roles.add(leviRole.id).catch((err) => console.log(err));
+                if (guildMember.roles.cache.has(leviRole.id)) return guildMember.roles.remove(leviRole.id).catch((err) => console.log(err));
             }
         } catch (err) {
             console.log(err)
@@ -880,23 +883,15 @@ client.on('messageCreate', async (message) => {
             if (message.author.id !== config.master) return;
             message.delete();
             const pirateEmbed = new EmbedBuilder()
-                .setDescription(`## How much bounty do you have?\n**- 🛡️ 5m\n- ⚔️ 10m\n- 👻 15m\n- 🗿 20m\n- 💎 30m**`)
-                .setColor('Red')
+                .setDescription(`## How much bounty/honor do you have?\n**- 🛡️ 5m\n- ⚔️ 10m\n- 👻 15m\n- 🗿 20m\n- 💎 30m\n- 💍 30m bounty and 30m honor**`)
+                .setColor('White')
             const pirateMessage = await message.channel.send({ embeds: [pirateEmbed] });
             await pirateMessage.react('🛡️')
             await pirateMessage.react('⚔️')
             await pirateMessage.react('👻')
             await pirateMessage.react('🗿')
             await pirateMessage.react('💎')
-            break;
-
-        case 'marine':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const marineEmbed = new EmbedBuilder()
-                .setDescription(`## Do you have 30/30 honour and bounty?\n**- 💯 30/30m**`)
-                .setColor('Blurple')
-                ; (await message.channel.send({ embeds: [marineEmbed] })).react('💯')
+            await pirateMessage.react('💍')
             break;
 
         case 'crew':
@@ -906,6 +901,15 @@ client.on('messageCreate', async (message) => {
                 .setDescription(`## Become part of the crew!`)
                 .setColor('a0d60c')
                 ; (await message.channel.send({ embeds: [crewEmbed] })).react('<:1046829394263552021:1213653837873807410>')
+            break;
+
+        case 'levi':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const leviEmbed = new EmbedBuilder()
+                .setDescription(`## React for levi ping!`)
+                .setColor('Blue')
+                ; (await message.channel.send({ embeds: [leviEmbed] })).react('🐬')
             break;
 
         case 'join':
@@ -1094,14 +1098,14 @@ client.on('guildMemberAdd', async (member) => {
             await member.ban();
         }
         let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`Members: ${member.guild.memberCount}`)
+        membersChannel.setName(`🗿・Members: ${member.guild.memberCount}`)
     }
 });
 
 client.on('guildMemberRemove', async (member) => {
     if (member.guild.id === '1199088499647852695') {
         let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`Members: ${member.guild.memberCount}`)
+        membersChannel.setName(`🗿・Members: ${member.guild.memberCount}`)
     }
 });
 
