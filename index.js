@@ -1077,6 +1077,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 client.on('debug', console.log).on('warn', console.log);
 
 client.on('guildMemberAdd', async (member) => {
+    const notBots = member.guild.members.cache.filter(member => member.user.bot == false)
 
     let blacklist = ['1040726659789246564']
 
@@ -1091,14 +1092,15 @@ client.on('guildMemberAdd', async (member) => {
             await member.ban();
         }
         let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`🗿・𝐌embers: ${member.guild.memberCount}`)
+        membersChannel.setName(`🗿・𝐌embers: ${notBots.size}`)
     }
 });
 
 client.on('guildMemberRemove', async (member) => {
+    const notBots = member.guild.members.cache.filter(member => member.user.bot == false)
     if (member.guild.id === '1199088499647852695') {
         let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`🗿・𝐌embers: ${member.guild.memberCount}`)
+        membersChannel.setName(`🗿・𝐌embers: ${notBots.size}`)
     }
 });
 
