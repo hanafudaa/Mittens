@@ -1089,6 +1089,7 @@ client.on('guildMemberAdd', async (member) => {
     let blacklist = ['1040726659789246564']
 
     if (member.guild.id === config.server) {
+        if (member.user.bot == true) return member.kick().catch((err) => console.log(err));
         const memberRole = member.guild.roles.cache.get('1211647374196351047');
         await member.roles.add(memberRole.id).catch((err) => console.log(err));
     }
@@ -1098,14 +1099,14 @@ client.on('guildMemberAdd', async (member) => {
             await member.ban();
         }
         let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`🗿・Members: ${member.guild.memberCount}`)
+        membersChannel.setName(`🗿・𝐌embers: ${member.guild.memberCount}`)
     }
 });
 
 client.on('guildMemberRemove', async (member) => {
     if (member.guild.id === '1199088499647852695') {
         let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`🗿・Members: ${member.guild.memberCount}`)
+        membersChannel.setName(`🗿・𝐌embers: ${member.guild.memberCount}`)
     }
 });
 
