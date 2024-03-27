@@ -150,7 +150,7 @@ const commands = [
     ],
   },
   {
-    name: 'statschannel',
+    name: 'channelstats',
     description: 'Creates a server stats category',
     default_member_permissions: PermissionsBitField.Flags.Administrator.toString(),
   },

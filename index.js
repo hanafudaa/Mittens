@@ -286,7 +286,7 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
 
-    if (interaction.commandName === 'statschannel') {
+    if (interaction.commandName === 'channelstats') {
         const createCategory = interaction.guild.channels.create({ type: ChannelType.GuildCategory, name: 'server-stats', position: 0 })
         setTimeout(() => { }, 2000);
         await interaction.guild.channels.fetch();
@@ -483,7 +483,6 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.commandName === 'ban') {
         Perm = `\`Ban Members\``
-        if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
         if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('user').user;
         const reason = interaction.options.getString('reason');
@@ -504,7 +503,6 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'kick') {
         Perm = `\`Kick Members\``
         try {
-            if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
             if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true });
             const user = interaction.options.get('user').user;
             const reason = interaction.options.getString('reason');
@@ -528,7 +526,6 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'softban') {
         Perm = `\`Ban Members\``
         try {
-            if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
             if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true });
             const user = interaction.options.get('member').user;
             const reason = interaction.options.getString('reason');
@@ -552,7 +549,6 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'roleveryone') {
         Perm = `\`Administrator\``
         try {
-            if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
             if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true });
             const role = interaction.options.get('role').role;
             interaction.guild.members.cache.forEach(member => member.roles.add(role.id));
