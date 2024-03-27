@@ -6,22 +6,6 @@ const { application } = require('express');
 
 const commands = [
   {
-    name: 'profile',
-    description: 'Display your cash profile',
-    options: [
-      {
-        name: 'user',
-        description: 'Display specfic user\'s cash profile',
-        type: ApplicationCommandOptionType.User,
-        required: false,
-      },
-    ],
-  },
-  {
-    name: 'help',
-    description: 'Find useful information about cash'
-  },
-  {
     name: 'uwuify',
     type: 3
   },
