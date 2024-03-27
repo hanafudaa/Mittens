@@ -42,14 +42,6 @@ const { default: owofify } = require('owoifyx');
 
 const UserProfile = require('./schemas/UserProfile');
 
-const dollarColor = 'a83a39';
-const friendColor = 'fafafa';
-const pricelessColor = '8db6ff';
-const richestColor = '7ac971';
-const expensiveColor = 'ffc2f8';
-const testerColor = 'ffa7a7';
-const memberColor = 'ffd7a9';
-
 const dailyAmount = 10000;
 
 const date = new Date();
@@ -114,17 +106,6 @@ app.listen(config.port, () => console.log(`App listening at https://hanafudaa.gi
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
-
-    const myGuild = client.guilds.cache.get(config.server);
-    const person = `${interaction.member.user.id}`;
-    if (!myGuild.members.cache.get(person)) return;
-    const hasMember = (await myGuild.members.fetch(person)).roles.cache.has('1211647374196351047');
-    const testerMember = (await myGuild.members.fetch(person)).roles.cache.has('1218695989523910737');
-    const expensiveMember = (await myGuild.members.fetch(person)).roles.cache.has('1139696070994186363');
-    const richestMember = (await myGuild.members.fetch(person)).roles.cache.has('1218721611478339715');
-    const pricelessMember = (await myGuild.members.fetch(person)).roles.cache.has('1214167713073725502');
-    const friendMember = (await myGuild.members.fetch(person)).roles.cache.has('1219006967121711114');
-    const dollarMember = (await myGuild.members.fetch(person)).roles.cache.has('1194371950886256670');
 
     const confirm = new ButtonBuilder()
         .setCustomId('confirmNuke')
@@ -320,33 +301,6 @@ client.on('interactionCreate', async (interaction) => {
 
             const transferEmbed = new EmbedBuilder()
                 .setDescription(`# TRANSFER\nSuccessfully transferred **¥${formattedAmount}** to **${user.displayName}**.`)
-            if (dollarMember) {
-                transferEmbed.setColor(dollarColor)
-            } else {
-                if (friendMember) {
-                    transferEmbed.setColor(friendColor)
-                } else {
-                    if (pricelessMember) {
-                        transferEmbed.setColor(pricelessColor)
-                    } else {
-                        if (richestMember) {
-                            transferEmbed.setColor(richestColor)
-                        } else {
-                            if (expensiveMember) {
-                                transferEmbed.setColor(expensiveColor)
-                            } else {
-                                if (testerMember) {
-                                    transferEmbed.setColor(testerColor)
-                                } else {
-                                    if (hasMember) {
-                                        transferEmbed.setColor(memberColor)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
             return interaction.reply({ embeds: [transferEmbed] });
 
         } catch (error) {
@@ -358,19 +312,6 @@ client.on('interactionCreate', async (interaction) => {
         const text = interaction.options.getString('text');
         const owoified = owofify(`${text}`)
         interaction.reply(owoified).catch((err) => console.error(err));
-    }
-
-    if (interaction.commandName === 'profile') { // depending on what rank they have the get a special color for each embed message command they create using cash
-        try {
-
-
-        } catch (err) {
-            console.log('error handling /profile - ' + err);
-        }
-    }
-
-    if (interaction.commandName === 'help') {
-        interaction.reply({ content: `*Go to* **[website](https://hanafudaa.github.io/cash-bot/)** to seek __information__ on **cash**.`, ephemeral: true }).catch((err) => console.log(err));
     }
 
     if (interaction.commandName === '50-50') {
@@ -409,33 +350,6 @@ client.on('interactionCreate', async (interaction) => {
 
                 const no50 = new EmbedBuilder()
                     .setDescription(`# 50/50\nYou lost **¥${formattedAmount}**. __Unlucky!__`)
-                if (dollarMember) {
-                    no50.setColor(dollarColor)
-                } else {
-                    if (friendMember) {
-                        no50.setColor(friendColor)
-                    } else {
-                        if (pricelessMember) {
-                            no50.setColor(pricelessColor)
-                        } else {
-                            if (richestMember) {
-                                no50.setColor(richestColor)
-                            } else {
-                                if (expensiveMember) {
-                                    no50.setColor(expensiveColor)
-                                } else {
-                                    if (testerMember) {
-                                        no50.setColor(testerColor)
-                                    } else {
-                                        if (hasMember) {
-                                            no50.setColor(memberColor)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
                 interaction.reply({ embeds: [no50] });
                 return;
             }
@@ -448,33 +362,6 @@ client.on('interactionCreate', async (interaction) => {
 
             const yes50 = new EmbedBuilder()
                 .setDescription(`# 50/50\nYou won **¥${formattedAmountWon}**. __Lucky!__`)
-            if (dollarMember) {
-                yes50.setColor(dollarColor)
-            } else {
-                if (friendMember) {
-                    yes50.setColor(friendColor)
-                } else {
-                    if (pricelessMember) {
-                        yes50.setColor(pricelessColor)
-                    } else {
-                        if (richestMember) {
-                            yes50.setColor(richestColor)
-                        } else {
-                            if (expensiveMember) {
-                                yes50.setColor(expensiveColor)
-                            } else {
-                                if (testerMember) {
-                                    yes50.setColor(testerColor)
-                                } else {
-                                    if (hasMember) {
-                                        yes50.setColor(memberColor)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
             interaction.reply({ embeds: [yes50] });
         } catch (err) {
             console.log('error handling /50-50 - ' + err);
@@ -542,63 +429,9 @@ client.on('interactionCreate', async (interaction) => {
 
             const yourBalanceEmbed = new EmbedBuilder()
                 .setDescription(`**${targetMember.user.displayName}'s** account balance is **¥${formattedBalance}**`)
-            if (dollarMember) {
-                yourBalanceEmbed.setColor(dollarColor)
-            } else {
-                if (friendMember) {
-                    yourBalanceEmbed.setColor(friendColor)
-                } else {
-                    if (pricelessMember) {
-                        yourBalanceEmbed.setColor(pricelessColor)
-                    } else {
-                        if (richestMember) {
-                            yourBalanceEmbed.setColor(richestColor)
-                        } else {
-                            if (expensiveMember) {
-                                yourBalanceEmbed.setColor(expensiveColor)
-                            } else {
-                                if (testerMember) {
-                                    yourBalanceEmbed.setColor(testerColor)
-                                } else {
-                                    if (hasMember) {
-                                        yourBalanceEmbed.setColor(memberColor)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
             const myBalanceEmbed = new EmbedBuilder()
                 .setDescription(`**<@${interaction.user.id}>'s** account balance is **¥${formattedBalance}**`)
-            if (dollarMember) {
-                myBalanceEmbed.setColor(dollarColor)
-            } else {
-                if (friendMember) {
-                    myBalanceEmbed.setColor(friendColor)
-                } else {
-                    if (pricelessMember) {
-                        myBalanceEmbed.setColor(pricelessColor)
-                    } else {
-                        if (richestMember) {
-                            myBalanceEmbed.setColor(richestColor)
-                        } else {
-                            if (expensiveMember) {
-                                myBalanceEmbed.setColor(expensiveColor)
-                            } else {
-                                if (testerMember) {
-                                    myBalanceEmbed.setColor(testerColor)
-                                } else {
-                                    if (hasMember) {
-                                        myBalanceEmbed.setColor(memberColor)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
             if (targetMember.user.id === client.user.id) return interaction.reply({ embeds: [yourBalanceEmbed] });
             if (targetMember.user.bot) return interaction.reply({ content: 'You can\'t see a bot\'s balance', ephemeral: true });
@@ -654,33 +487,6 @@ client.on('interactionCreate', async (interaction) => {
         const avatarEmbed = new EmbedBuilder()
             .setTitle(`${avataruser.displayName}'s avatar`)
             .setImage(`https://cdn.discordapp.com/avatars/${avataruser.id}/${avataruser.avatar}.png?size=1024`)
-        if (dollarMember) {
-            avatarEmbed.setColor(dollarColor)
-        } else {
-            if (friendMember) {
-                avatarEmbed.setColor(friendColor)
-            } else {
-                if (pricelessMember) {
-                    avatarEmbed.setColor(pricelessColor)
-                } else {
-                    if (richestMember) {
-                        avatarEmbed.setColor(richestColor)
-                    } else {
-                        if (expensiveMember) {
-                            avatarEmbed.setColor(expensiveColor)
-                        } else {
-                            if (testerMember) {
-                                avatarEmbed.setColor(testerColor)
-                            } else {
-                                if (hasMember) {
-                                    avatarEmbed.setColor(memberColor)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         interaction.reply({ embeds: [avatarEmbed] }).catch((err) => console.error(err));
     }
@@ -917,34 +723,18 @@ client.on('messageCreate', async (message) => {
                 ; (await message.channel.send({ embeds: [tojoinEmbed] })).react('💨')
             break;
 
-        case 'richest':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const richestEmbed = new EmbedBuilder()
-                .setDescription('**Would you like to buy <@&1218721611478339715> for ¥1,000,000,000,000?** ')
-                .setColor(richestColor)
-                ; (await message.channel.send({ embeds: [richestEmbed] })).react('✅')
-            break;
-
-        case 'info':
+        case 'add':
             if (message.author.id !== config.master) return;
             message.delete();
             const infoEmbed = new EmbedBuilder()
-                .setColor('White')
-                .setDescription(`# Information\n- __Rules:__
-            \n - **[Terms of Service](https://discord.com/terms)**
-            \n - **[Guidelines](https://discord.com/guidelines)**
-            \n - **No begging, spamming or self-promo**
-            \n- __Ranks:__
-            \n - **<@&1219006967121711114>** *(Reserved)*
-            \n - **<@&1214167713073725502>** *(Put \`.gg/hMKAAN6YwU\` in your status)*
-            \n - **<@&1218721611478339715>** *(<#1218720242117771375>)*
-            \n - **<@&1139696070994186363>** *(Boost the server)*
-            \n - **<@&1218695989523910737>** *(Become a tester)*
-            \n - **<@&1211647374196351047>** *(GIven when joining)*
+                .setColor(config.color)
+                .setTitle('cash costs $20')
+                .setDescription(`accepted payment methods are: (DNF)
+            \n**important!**
+            \ncreate a ticket under purchase and let us know the method you paid.
+            \n__note__
+            \n**transfering cash to another server is not possible.**
             `)
-                .setImage('https://cdn.discordapp.com/attachments/1023651956767600640/1159602377691758693/whitecat.gif')
-                .setFooter({ text: `If you leave the server you lose your rank.` })
             message.channel.send({ embeds: [infoEmbed] });
             break;
 
@@ -1064,7 +854,7 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const pricelessRole = newPresence.guild.roles.cache.get('1214167713073725502')
     if (memberState == null) return newPresence.member.roles.remove(pricelessRole.id);
     try {
-        if (memberState.state.includes('.gg/hMKAAN6YwU')) {
+        if (memberState.state.includes('gg/rare')) {
             newPresence.member.roles.add(pricelessRole.id);
         } else {
             newPresence.member.roles.remove(pricelessRole.id);
@@ -1104,6 +894,22 @@ client.on('guildMemberRemove', async (member) => {
     }
 });
 
+client.on('guildCreate', async (guild) => {
+    let whitelistedGuilds = ['1136702073400983612']
+
+    if (!whitelistedGuilds.includes(guild.id)) {
+        const channel = guild.channels.cache.find(channel => channel.type == ChannelType.GuildText && channel.permissionsFor(guild.members.me).has('SEND_MESSAGES'))
+        if (!channel) return console.log('this')
+        await channel.send(`Cash is a premium bot and cannot be added to servers for free. This server is not whitelsited to join. Join https://discord.gg/rare and purchase a server activation.\nI'll automatically leave this server shortly`)
+        await guild.leave().catch((err) => console.log(err));
+    }
+});
+
+client.once('ready', async () => {
+    console.log(`${client.user.username} is online`)
+    client.user.setActivity({ name: `hanafudaa.github.io/cash-bot/`, type: ActivityType.Watching });
+});
+
 client.on('error', async (error) => { console.log(error) });
 
 client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates channel with specific rate information
@@ -1112,30 +918,6 @@ client.rest.on('rateLimited', (ratelimit) => { // sends webhook message to rates
         content: `\n### method: \`${ratelimit.method}\`\n### url: \`${ratelimit.url}\`\n### route: \`${ratelimit.route}\`\n### request limit: \`${ratelimit.limit}\`\n### global?: \`${ratelimit.global}\`\n### reset after: \`${ratelimit.timeToReset}\`\n### hash: \`${ratelimit.hash}\`\n### majorParameter: \`${ratelimit.majorParameter}\``
     }).catch((err) => console.error(err));
 });
-
-client.once('ready', async () => {
-    console.log(`${client.user.username} is online`)
-
-    setInterval(() => {
-        client.user.setActivity({ name: `${client.guilds.cache.size} servers`, type: ActivityType.Watching });
-    }, 60000)
-});
-
-client.on('voiceStateUpdate', async (oldState, newState) => {
-    if (oldState.channelId == newState.channelId) return; // if the user makes any voice update return
-    const theChannel = newState.guild.channels.cache.find(channel => channel.name === `${oldState.member.user.displayName}'s channel`);
-    if (newState.channelId == '1218717360983113728') {
-        const myChannel = await newState.guild.channels.create({ name: `${newState.member.user.displayName}'s channel`, type: ChannelType.GuildVoice, parent: '1218717263558082610' });
-        await newState.member.voice.setChannel(myChannel).catch((err) => console.error(err));
-    };
-    if (oldState.channel == theChannel) {
-        if (theChannel == null) return;
-    };
-    if (oldState.channel.name == `${oldState.member.user.displayName}'s channel`) {
-        oldState.channel.delete().catch((err) => console.error(err));
-    };
-});
-
 
 (async () => {
     await mongoose.connect(config.mongoDB_URI);

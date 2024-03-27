@@ -143,6 +143,10 @@ const commands = [
     ],
   },
   {
+    name: 'deal-with-the-devil',
+    description: '33% chance to win 5x your money, Lose and you end up with 1/3 of your balance',
+  },
+  {
     name: 'softban',
     description: 'Bans a user, deleting their messages from the past 7 days than unbans them',
     default_member_permissions: PermissionsBitField.Flags.BanMembers.toString(),
@@ -188,15 +192,7 @@ const commands = [
   },
 ];
 
-const exclusivecommands = [
-  {
-    name: 'Report message',
-    type: 3
-  },
-  {
-    name: 'deal-with-the-devil',
-    description: '33% chance to win 5x your money, Lose and you end up with 1/3 of your balance',
-  }
+const cashGuildCommands = [
 ];
 
 // Construct and prepare an instance of the REST module
@@ -208,7 +204,7 @@ const rest = new REST().setToken(config.token);
     console.log('Started refreshing application (/) commands.');
 
     await rest.put(Routes.applicationCommands(config.clientId), { body: commands });
-    await rest.put(Routes.applicationGuildCommands(config.clientId, config.server), { body: exclusivecommands });
+    await rest.put(Routes.applicationGuildCommands(config.clientId, config.server), { body: cashGuildCommands });
 
     console.log('Successfully reloaded application (/) commands.');
   } catch (error) {
