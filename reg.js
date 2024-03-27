@@ -150,6 +150,11 @@ const commands = [
     ],
   },
   {
+    name: 'statschannel',
+    description: 'Creates a server stats category',
+    default_member_permissions: PermissionsBitField.Flags.Administrator.toString(),
+  },
+  {
     name: 'roleveryone',
     description: 'Gives a specific role to everyone in the server',
     default_member_permissions: PermissionsBitField.Flags.Administrator.toString(),

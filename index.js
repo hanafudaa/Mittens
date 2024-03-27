@@ -66,6 +66,7 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 
 const { request } = require('undici');
 const express = require('express');
+const internal = require('node:stream');
 
 const app = express();
 
@@ -283,6 +284,22 @@ client.on('interactionCreate', async (interaction) => {
         } catch (error) {
             console.log('error handling /transfer command ' + error);
         }
+    }
+
+    if (interaction.commandName === 'statschannel') {
+        const createCategory = interaction.guild.channels.create({ type: ChannelType.GuildCategory, name: 'server-stats', position: 0 })
+        setTimeout(() => { }, 2000);
+        await interaction.guild.channels.fetch();
+        const statCategory = interaction.guild.channels.cache.find(channel => channel.type == ChannelType.GuildCategory && channel.name == 'server-stats')
+        await interaction.guild.channels.create({
+            type: ChannelType.GuildVoice, name: 'members:', permissionOverwrites: [
+                {
+                    id: interaction.guild.id,
+                    allow: [PermissionsBitField.Flags.ViewChannel],
+                    deny: [PermissionsBitField.Flags.Connect],
+                },
+            ], parent: statCategory,
+        }).then(interaction.reply({ content: 'stats channels created.', ephemeral: true }));
     }
 
     if (interaction.commandName === 'owoify') {
@@ -689,7 +706,7 @@ client.on('messageCreate', async (message) => {
             await message.guild.leave();
             break;
 
-        case 'lock':
+        case 'lock': // lock a voice channel so users can't join it
             if (message.guild.id !== config.server) return;
             if (message.channel.type === ChannelType.DM) return;
             if (!message.member.roles.cache.has(config.council)) return;
@@ -758,6 +775,27 @@ client.on('messageCreate', async (message) => {
     };
 });
 
+client.on('guildMemberAdd', async (guildMember) => {
+    let blacklist = ['']
+
+    if (member.guild.id === config.server) {
+        if (member.user.bot == true) return member.kick().catch((err) => console.log(err));
+        const memberRole = member.guild.roles.cache.get('1211647374196351047');
+        await member.roles.add(memberRole.id).catch((err) => console.log(err));
+    }
+    const memberStatChan = guildMember.guild.channels.cache.find(channel => channel.type == ChannelType.GuildVoice && channel.name.includes('members:'));
+    if (memberStatChan) {
+        await memberStatChan.edit({ name: `members: ${guildMember.guild.members.cache.size}` }).catch((err) => console.log(err));
+    }
+});
+
+client.on('guildMemberRemove', async (guildMember) => {
+    const memberStatChan = guildMember.guild.channels.cache.find(channel => channel.type == ChannelType.GuildVoice && channel.name.includes('members:'));
+    if (memberStatChan) {
+        await memberStatChan.edit({ name: `members: ${guildMember.guild.members.cache.size}` }).catch((err) => console.log(err));
+    }
+})
+
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state);
     if (newPresence.guild.id !== config.server) return;
@@ -776,16 +814,6 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
 client.on('debug', console.log).on('warn', console.log);
 
-client.on('guildMemberAdd', async (member) => {
-    let blacklist = ['']
-
-    if (member.guild.id === config.server) {
-        if (member.user.bot == true) return member.kick().catch((err) => console.log(err));
-        const memberRole = member.guild.roles.cache.get('1211647374196351047');
-        await member.roles.add(memberRole.id).catch((err) => console.log(err));
-    }
-});
-
 client.on('guildCreate', async (guild) => {
     let whitelistedGuilds = [config.server, '1218968327146311880', '852286442000351253']
 
@@ -798,7 +826,7 @@ client.on('guildCreate', async (guild) => {
         } catch (err) {
             console.log(`error handling guild whitelist - ` + err);
         }
-    }
+    }ß
 });
 
 client.once('ready', async () => {
