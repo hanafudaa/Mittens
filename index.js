@@ -288,18 +288,17 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.commandName === 'channelstats') {
         const createCategory = interaction.guild.channels.create({ type: ChannelType.GuildCategory, name: 'server-stats', position: 0 })
-        setTimeout(() => { }, 2000);
         await interaction.guild.channels.fetch();
         const statCategory = interaction.guild.channels.cache.find(channel => channel.type == ChannelType.GuildCategory && channel.name == 'server-stats')
         await interaction.guild.channels.create({
-            type: ChannelType.GuildVoice, name: 'members:', permissionOverwrites: [
+            type: ChannelType.GuildVoice, name: `members: ${interaction.guild.members.cache.size}`, permissionOverwrites: [
                 {
                     id: interaction.guild.id,
                     allow: [PermissionsBitField.Flags.ViewChannel],
                     deny: [PermissionsBitField.Flags.Connect],
                 },
             ], parent: statCategory,
-        }).then(interaction.reply({ content: 'stats channels created.', ephemeral: true }));
+        }).then(interaction.reply({ content: 'Stats channels created.', ephemeral: true }));
     }
 
     if (interaction.commandName === 'owoify') {
