@@ -106,6 +106,9 @@ app.listen(config.port, () => console.log(`App listening at https://hanafudaa.gi
 // ------------------------------------------------------------------------------------------------------------------------
 
 client.on('interactionCreate', async (interaction) => {
+    if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'Can\`t use interactions in dms', ephemeral: true }).catch((err) => console.error(err));
+
+    var Perm = 'Undefined Permission'
 
     const confirm = new ButtonBuilder()
         .setCustomId('confirmNuke')
@@ -120,12 +123,13 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
         const intMessage = interaction.channel.messages.cache.get(interaction.message.id);
         if (interaction.component.customId == 'confirmNuke') {
-            if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'I don\'t have the permission: **"Manage Channels"**.', ephemeral: true });
-            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: 'You don\'t have the permission: **"Manage Channels"**.', ephemeral: true });
+            Perm = '\`Manage Channels\`'
+            if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true });
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return interaction.reply({ content: `You don\'t have the permission: ${Perm}`, ephemeral: true });
             const nukeChannel = interaction.guild.channels.cache.get(interaction.channel.id);
-            if (nukeChannel.id == interaction.guild.publicUpdatesChannelId) return interaction.channel.send({ content: 'I can\'t nuke community update channel.' }).then(intMessage.delete()).catch((err) => console.log(err))
-            if (nukeChannel.id == interaction.guild.rulesChannelId) return interaction.channel.send({ content: 'I can\'t nuke rule channel.' }).then(intMessage.delete()).catch((err) => console.log(err));
-            if (nukeChannel.id == interaction.guild.safetyAlertsChannelId) return interaction.channel.send({ content: 'I can\'t nuke safety notifications channel.' }).then(intMessage.delete()).catch((err) => console.log(err));
+            if (nukeChannel.id == interaction.guild.publicUpdatesChannelId) return interaction.channel.send({ content: 'I can\'t nuke \`Community Update\` channel' }).then(intMessage.delete()).catch((err) => console.log(err))
+            if (nukeChannel.id == interaction.guild.rulesChannelId) return interaction.channel.send({ content: 'I can\'t nuke \`Rules\` channel' }).then(intMessage.delete()).catch((err) => console.log(err));
+            if (nukeChannel.id == interaction.guild.safetyAlertsChannelId) return interaction.channel.send({ content: 'I can\'t nuke \`Safety Notifications\` channel' }).then(intMessage.delete()).catch((err) => console.log(err));
             try {
                 nukeChannel.delete();
                 await nukeChannel.clone();
@@ -145,7 +149,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'nuke') { // clones the channel and deletes the original
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         try {
             const nukeRow = new ActionRowBuilder()
                 .addComponents(cancel, confirm);
@@ -155,29 +158,6 @@ client.on('interactionCreate', async (interaction) => {
             console.log('error handling /nuke - ' + error)
         }
     };
-
-
-    if (interaction.commandName === "Report message") {
-        const msg = interaction.channel.messages.cache.get(interaction.targetMessage.id)
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (msg.member.user.id == client.user.id) return interaction.reply({ content: `You cannot report me.`, ephemeral: true }).catch((err) => console.error(err));
-        if (msg.member.user.id == interaction.member.id) return interaction.reply({ content: `You cannot report yourself.`, ephemeral: true }).catch((err) => console.error(err));
-        try {
-            const reportWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/1139265242732429333/x9AYlXKZwZTAj5xZ9ZKTrWyVEcwXnac__cELa7vGPmalpN1Gv08g7QboKAFEvSrlJ6Sp' });
-            const reportEmbed = new EmbedBuilder()
-                .setColor(config.color)
-                .addFields(
-                    { name: 'Reporter', value: `${interaction.member.user.username}`, inline: true },
-                    { name: 'Message link', value: `${msg.url}`, inline: true },
-                    { name: 'Reported user', value: `**${msg.member.user.username}** ||${msg.member.user.id}||`, inline: true },
-                    { name: 'Message content', value: `\`\`\`${msg.content}\`\`\``, inline: false })
-
-            reportWH.send({ embeds: [reportEmbed] }).catch((err) => console.error(err));
-            interaction.reply({ content: `Report has been sent.`, ephemeral: true });
-        } catch (error) {
-            console.log(`error handling "Report message" Message App Command ${error}`);
-        }
-    }
 
     if (interaction.commandName === "uwuify") {
         const msg = interaction.channel.messages.cache.get(interaction.targetMessage.id)
@@ -189,7 +169,6 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'stop') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         try {
             interaction.reply({ content: 'Stopping the song from playing.' });
             var getConnection = getVoiceConnection(interaction.guild.id);
@@ -201,7 +180,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'play') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const file = interaction.options.getAttachment('file');
 
         try {
@@ -248,7 +226,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'transfer') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('user').user;
         const amount = interaction.options.getNumber('amount');
 
@@ -315,7 +292,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === '50-50') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const amount = interaction.options.getNumber('amount');
         const amountWon = Number((amount * (Math.floor(1) + 0.5)).toFixed(0));
 
@@ -412,7 +388,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'balance') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'Can\'t use command in DMs', ephemeral: true })
         const targetUserId = interaction.options.getUser('user')?.id || interaction.user.id;
 
         const targetMember = interaction.guild.members.cache.get(targetUserId);
@@ -447,7 +422,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'daily') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         try {
 
             let userProfile = await UserProfile.findOne({
@@ -482,7 +456,6 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'avatar') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
         const avataruser = interaction.options.get('user').user;
         const avatarEmbed = new EmbedBuilder()
             .setTitle(`${avataruser.displayName}'s avatar`)
@@ -492,8 +465,9 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'ban') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission: **"Ban Members"**.', ephemeral: true }).catch((err) => console.error(err));
+        Perm = `\`Ban Members\``
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true }).catch((err) => console.error(err));
         const user = interaction.options.get('user').user;
         const reason = interaction.options.getString('reason');
         const banMember = interaction.guild.members.cache.get(user.id);
@@ -511,52 +485,67 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'kick') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return interaction.reply({ content: 'I don\'t have the permission: **"Kick Members"**.', ephemeral: true }).catch((err) => console.error(err));
-        const user = interaction.options.get('user').user;
-        const reason = interaction.options.getString('reason');
-        const kickMember = interaction.guild.members.cache.get(user.id);
-        if (interaction.member.id == user.id) return interaction.reply({ content: 'You can\'t kick yourself.', ephemeral: true }).catch((err) => console.error(err));
-        if (!kickMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
-        if (!kickMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
-        if (user.id == config.clientId) return;
-        if (interaction.guild.id === config.server) {
-            if (!reason) return (await interaction.reply({ content: `You must provide a reason for kick.`, ephemeral: true }));
-            await moderationWH.send({ content: `**${kickMember.user.username}** was kicked by <@${interaction.member.id}>\n## reason:\n"${reason}".` }).catch((err) => console.log(err));
+        Perm = `\`Kick Members\``
+        try {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
+            if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true });
+            const user = interaction.options.get('user').user;
+            const reason = interaction.options.getString('reason');
+            const kickMember = interaction.guild.members.cache.get(user.id);
+            if (interaction.member.id == user.id) return interaction.reply({ content: 'You can\'t kick yourself.', ephemeral: true });
+            if (!kickMember) return interaction.reply({ content: `Member not found`, ephemeral: true });
+            if (!kickMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true });
+            if (user.id == config.clientId) return;
+            if (interaction.guild.id === config.server) {
+                if (!reason) return (await interaction.reply({ content: `You must provide a reason for kick.`, ephemeral: true }));
+                await moderationWH.send({ content: `**${kickMember.user.username}** was kicked by <@${interaction.member.id}>\n## reason:\n"${reason}".` });
+            }
+            await kickMember.kick({ reason: `${reason}` }).then(interaction.reply({
+                content: `${kickMember.user.username} was kicked.`
+            }))
+        } catch (err) {
+            console.log(`error when handling /kick - ` + err);
         }
-        await kickMember.kick({ reason: `${reason}` }).then(interaction.reply({
-            content: `${kickMember.user.username} was kicked.`
-        })).catch((err) => console.log(err));
     }
 
     if (interaction.commandName === 'softban') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: 'I don\'t have the permission: **"Ban Members"**.', ephemeral: true }).catch((err) => console.error(err));
-        const user = interaction.options.get('member').user;
-        const reason = interaction.options.getString('reason');
-        const banMember = interaction.guild.members.cache.get(user.id);
-        if (interaction.member.id == user.id) return interaction.reply({ content: 'You can\'t ban yourself.', ephemeral: true }).catch((err) => console.error(err));
-        if (!banMember) return interaction.reply({ content: `Member not found`, ephemeral: true }).catch((err) => console.error(err));
-        if (!banMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true }).catch((err) => console.error(err));
-        if (user.id == config.clientId) return;
-        if (interaction.guild.id === config.server) {
-            if (!reason) return (await interaction.reply({ content: `You must provide a reason for softbanning.`, ephemeral: true }));
-            await moderationWH.send({ content: `**${banMember.user.username}** was softbanned by <@${interaction.member.id}>\n## reason:\n"${reason}".` }).catch((err) => console.log(err));
+        Perm = `\`Ban Members\``
+        try {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
+            if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true });
+            const user = interaction.options.get('member').user;
+            const reason = interaction.options.getString('reason');
+            const banMember = interaction.guild.members.cache.get(user.id);
+            if (interaction.member.id == user.id) return interaction.reply({ content: 'You can\'t ban yourself.', ephemeral: true });
+            if (!banMember) return interaction.reply({ content: `Member not found`, ephemeral: true });
+            if (!banMember.manageable) return interaction.reply({ content: `I can\'t manage ${user.displayName}.`, ephemeral: true });
+            if (user.id == config.clientId) return;
+            if (interaction.guild.id === config.server) {
+                if (!reason) return (await interaction.reply({ content: `You must provide a reason for softbanning.`, ephemeral: true }));
+                await moderationWH.send({ content: `**${banMember.user.username}** was softbanned by <@${interaction.member.id}>\n## reason:\n"${reason}".` });
+            }
+            await banMember.ban({ deleteMessageSeconds: 604800 }).then(banMember => interaction.guild.members.unban(banMember.id)).then(interaction.reply({
+                content: `${banMember.user.username} was softbanned.`
+            }));
+        } catch (err) {
+            console.log(`error when handling /ban - ` + err);
         }
-        await banMember.ban({ deleteMessageSeconds: 604800 }).then(banMember => interaction.guild.members.unban(banMember.id)).then(interaction.reply({
-            content: `${banMember.user.username} was softbanned.`
-        })).catch((err) => console.log(err));
     }
 
     if (interaction.commandName === 'roleveryone') {
-        if (interaction.channel.type === ChannelType.DM) return interaction.reply({ content: 'This command won\'t work here.', ephemeral: true }).catch((err) => console.error(err));
-        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: 'I don\'t have the permission: **"Administrator"**.', ephemeral: true }).catch((err) => console.error(err));
-        const role = interaction.options.get('role').role;
-        interaction.guild.members.cache.forEach(member => member.roles.add(role.id).catch((err) => console.log(err)));
-        interaction.reply({
-            content: `All members now have ${role}`,
-            ephemeral: true,
-        }).catch((err) => console.error(err));
+        Perm = `\`Administrator\``
+        try {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return (interaction.reply({ content: `You don\`t have the permission: ${Perm}` }));
+            if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({ content: `I don\'t have the permission: ${Perm}`, ephemeral: true });
+            const role = interaction.options.get('role').role;
+            interaction.guild.members.cache.forEach(member => member.roles.add(role.id));
+            interaction.reply({
+                content: `All members now have ${role}`,
+                ephemeral: true,
+            });
+        } catch (err) {
+            console.log(`error when handling /roleveryone - ` + err);
+        }
     }
 });
 
@@ -732,7 +721,7 @@ client.on('messageCreate', async (message) => {
                 .setDescription(`accepted payment methods are: (DNF)
             \n**important!**
             \ncreate a ticket under purchase and let us know the method you paid.
-            \n__note__
+            \n**NOTE**
             \n**transfering cash to another server is not possible.**
             `)
             message.channel.send({ embeds: [infoEmbed] });
@@ -851,13 +840,13 @@ client.on('messageCreate', async (message) => {
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state);
     if (newPresence.guild.id !== config.server) return;
-    const pricelessRole = newPresence.guild.roles.cache.get('1214167713073725502')
-    if (memberState == null) return newPresence.member.roles.remove(pricelessRole.id);
+    // create role id
+    if (memberState == null) return; // remvoe role
     try {
         if (memberState.state.includes('gg/rare')) {
-            newPresence.member.roles.add(pricelessRole.id);
+            // add role
         } else {
-            newPresence.member.roles.remove(pricelessRole.id);
+            // remove role
         }
     } catch (err) {
         console.log('error handling presence event - ' + err);
@@ -867,39 +856,21 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 client.on('debug', console.log).on('warn', console.log);
 
 client.on('guildMemberAdd', async (member) => {
-    const notBots = member.guild.members.cache.filter(member => member.user.bot == false)
-
-    let blacklist = ['1040726659789246564']
+    let blacklist = ['']
 
     if (member.guild.id === config.server) {
         if (member.user.bot == true) return member.kick().catch((err) => console.log(err));
         const memberRole = member.guild.roles.cache.get('1211647374196351047');
         await member.roles.add(memberRole.id).catch((err) => console.log(err));
     }
-
-    if (member.guild.id === '1199088499647852695') {
-        if (blacklist.includes(member.user.id)) {
-            await member.ban();
-        }
-        let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`🗿・𝐌embers: ${notBots.size}`)
-    }
-});
-
-client.on('guildMemberRemove', async (member) => {
-    const notBots = member.guild.members.cache.filter(member => member.user.bot == false)
-    if (member.guild.id === '1199088499647852695') {
-        let membersChannel = member.guild.channels.cache.get('1220860307501617202')
-        membersChannel.setName(`🗿・𝐌embers: ${notBots.size}`)
-    }
 });
 
 client.on('guildCreate', async (guild) => {
-    let whitelistedGuilds = ['1136702073400983612']
+    let whitelistedGuilds = [config.server, '1218968327146311880', '852286442000351253']
 
     if (!whitelistedGuilds.includes(guild.id)) {
         const channel = guild.channels.cache.find(channel => channel.type == ChannelType.GuildText && channel.permissionsFor(guild.members.me).has('SEND_MESSAGES'))
-        if (!channel) return console.log('this')
+        if (!channel) return guild.leave().catch((err) => console.log(err));
         await channel.send(`Cash is a premium bot and cannot be added to servers for free. This server is not whitelsited to join. Join https://discord.gg/rare and purchase a server activation.\nI'll automatically leave this server shortly`)
         await guild.leave().catch((err) => console.log(err));
     }
