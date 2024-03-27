@@ -774,10 +774,10 @@ client.on('messageCreate', async (message) => {
 client.on('guildMemberAdd', async (guildMember) => {
     let blacklist = ['']
 
-    if (member.guild.id === config.server) {
-        if (member.user.bot == true) return member.kick().catch((err) => console.log(err));
-        const memberRole = member.guild.roles.cache.get('1211647374196351047');
-        await member.roles.add(memberRole.id).catch((err) => console.log(err));
+    if (guildMember.guild.id === config.server) {
+        if (guildMember.user.bot == true) return guildMember.kick().catch((err) => console.log(err));
+        const memberRole = guildMember.guild.roles.cache.get('1211647374196351047');
+        await guildMember.roles.add(memberRole.id).catch((err) => console.log(err));
     }
     const memberStatChan = guildMember.guild.channels.cache.find(channel => channel.type == ChannelType.GuildVoice && channel.name.includes('members:'));
     if (memberStatChan) {
