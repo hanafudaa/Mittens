@@ -147,13 +147,19 @@ client.on('interactionCreate', async (interaction) => {
                 console.log(`error cancelling interaction - ${error}`);
             }
         }
+        if (interaction.component.customId == 'purchaseButtonId') {
+
+        }
+        if (interaction.component.customId == 'requestButtuonId') {
+            
+        }
     }
 
     if (interaction.commandName === 'nuke') { // clones the channel and deletes the original
         try {
             const nukeRow = new ActionRowBuilder()
                 .addComponents(cancel, confirm);
-
+            76
             await interaction.reply({ content: `Are you sure you want to nuke this channel?`, components: [nukeRow] });
         } catch (error) {
             console.log('error handling /nuke - ' + error)
@@ -660,13 +666,31 @@ client.on('messageCreate', async (message) => {
             message.channel.send({ embeds: [infoEmbed] });
             break;
 
-        case 'ticketembed':
+        case 'ticket':
+            if (message.author.id !== config.master) return;
+            message.delete();
+
+            const purchaseButton = new ButtonBuilder()
+                .setCustomId('purchaseButtonId')
+                .setLabel('New Purchase')
+                .setEmoji('💵')
+                .setStyle(ButtonStyle.Secondary);
+
+            const requestButton = new ButtonBuilder()
+                .setCustomId('requestButtonId')
+                .setLabel('Commissions & Feature Requests')
+                .setEmoji('💎')
+                .setStyle(ButtonStyle.Secondary);
+
+            const ticketRow = new ActionRowBuilder()
+                .addComponents(purchaseButton, requestButton);
+
             const ticketEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle('Create a ticket')
                 .setDescription(`Create a ticket below for new purchases or if you have Cash and would like to discuss with the developer a **PAID** commission to add a feature to the bot.\n\nIf you are purchasing Cashn, make sure you have completed your payment first before creating a ticket.\n\nPlease not that we do not currently do transfers to new servers.`)
-                .setImage('https://cdn.discordapp.com/attachments/1023651956767600640/1159602377691758693/whitecat.gif?ex=660f1adf&is=65fca5df&hm=bb736c5667e2ff71407918f01b7b73c3a7f59d740cbc28fbe1c389c4a3e953c9&')
-            message.channel.send({ embeds: [ticketEmbed] });
+            
+            message.channel.send({ embeds: [ticketEmbed], components: [ticketRow]});
             break;
 
         case 'vanityembed':
