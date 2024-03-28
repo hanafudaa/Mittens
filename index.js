@@ -287,9 +287,9 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     if (interaction.commandName === 'channelstats') {
-        const createCategory = interaction.guild.channels.create({ type: ChannelType.GuildCategory, name: 'server-stats', position: 0 })
-        await interaction.guild.channels.fetch();
-        const statCategory = interaction.guild.channels.cache.find(channel => channel.type == ChannelType.GuildCategory && channel.name == 'server-stats')
+        await interaction.guild.channels.create({ type: ChannelType.GuildCategory, name: 'server-stats', position: 0 }).catch((err) => console.log(err));
+        await interaction.guild.channels.fetch().catch((err) => console.log(err));
+        const statCategory = interaction.guild.channels.cache.find(channel => channel.type == ChannelType.GuildCategory && channel.name == 'server-stats');
         await interaction.guild.channels.create({
             type: ChannelType.GuildVoice, name: `members: ${interaction.guild.members.cache.size}`, permissionOverwrites: [
                 {
@@ -297,8 +297,8 @@ client.on('interactionCreate', async (interaction) => {
                     allow: [PermissionsBitField.Flags.ViewChannel],
                     deny: [PermissionsBitField.Flags.Connect],
                 },
-            ], parent: statCategory,
-        }).then(interaction.reply({ content: 'Stats channels created.', ephemeral: true }));
+            ], parent: statCategory
+        }).then(interaction.reply({ content: 'Channel stats created.', ephemeral: true }));
     }
 
     if (interaction.commandName === 'owoify') {
@@ -650,7 +650,7 @@ client.on('messageCreate', async (message) => {
             message.delete();
             const infoEmbed = new EmbedBuilder()
                 .setColor(config.color)
-                .setTitle('cash costs $20')
+                .setTitle('cash costs $15')
                 .setDescription(`accepted payment methods are: (DNF)
             \n**important!**
             \ncreate a ticket under purchase and let us know the method you paid.
@@ -658,6 +658,26 @@ client.on('messageCreate', async (message) => {
             \n**transfering cash to another server is not possible.**
             `)
             message.channel.send({ embeds: [infoEmbed] });
+            break;
+
+        case 'ticketembed':
+            const ticketEmbed = new EmbedBuilder()
+                .setColor(config.color)
+                .setTitle('Create a ticket')
+                .setDescription(`Create a ticket below for new purchases or if you have Cash and would like to discuss with the developer a **PAID** commission to add a feature to the bot.\n\nIf you are purchasing Cashn, make sure you have completed your payment first before creating a ticket.\n\nPlease not that we do not currently do transfers to new servers.`)
+                .setImage('https://cdn.discordapp.com/attachments/1023651956767600640/1159602377691758693/whitecat.gif?ex=660f1adf&is=65fca5df&hm=bb736c5667e2ff71407918f01b7b73c3a7f59d740cbc28fbe1c389c4a3e953c9&')
+            message.channel.send({ embeds: [ticketEmbed] });
+            break;
+
+        case 'vanityembed':
+            if (message.author.id !== config.master) return;
+            message.delete();
+            const vanityEmbed = new EmbedBuilder()
+                .setColor(config.color)
+                .setTitle('vanity advertising')
+                .setThumbnail('https://cdn.discordapp.com/attachments/1218667384492261486/1222705317163438221/Screenshot_2024-03-28_at_00.26.52.png?ex=66173010&is=6604bb10&hm=7faedc2caa2b9abe6b4e6538364a0cefc356cc6faf6a1364a0667a1c40b526ac&')
+                .setDescription(`reserved for **whitelisted servers** only\n\naward users for advertising the server's vanity code in their status\n\nafter purchasing talk to <@${config.master}> to configure the award`)
+            message.channel.send({ embeds: [vanityEmbed] });
             break;
 
         case 'menu':
@@ -793,17 +813,20 @@ client.on('guildMemberRemove', async (guildMember) => {
 
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     const memberState = newPresence.member.presence.activities.find(activity => activity.state);
-    if (newPresence.guild.id !== config.server) return;
-    // create role id
-    if (memberState == null) return; // remvoe role
-    try {
-        if (memberState.state.includes('gg/rare')) {
-            // add role
-        } else {
-            // remove role
+    if (newPresence.guild.vanityURLCode !== null) {
+        if (newPresence.guild.id == config.server) {
+            const vanityRole = newPresence.guild.roles.cache.get('1222699321237962833') // my vanity role
+            try {
+                if (memberState == null) return newPresence.member.roles.remove(vanityRole.id)
+                if (memberState.state.includes('/' + newPresence.guild.vanityURLCode)) {
+                    newPresence.member.roles.add(vanityRole.id)
+                } else {
+                    newPresence.member.roles.remove(vanityRole.id)
+                }
+            } catch (err) {
+                console.log('error handling presence event - ' + err);
+            }
         }
-    } catch (err) {
-        console.log('error handling presence event - ' + err);
     }
 });
 
@@ -821,7 +844,7 @@ client.on('guildCreate', async (guild) => {
         } catch (err) {
             console.log(`error handling guild whitelist - ` + err);
         }
-    }ß
+    }
 });
 
 client.once('ready', async () => {
