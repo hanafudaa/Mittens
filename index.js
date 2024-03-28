@@ -67,6 +67,7 @@ const moderationWH = new WebhookClient({ url: 'https://discord.com/api/webhooks/
 const { request } = require('undici');
 const express = require('express');
 const internal = require('node:stream');
+const { channel } = require('node:diagnostics_channel');
 
 const app = express();
 
@@ -121,6 +122,11 @@ client.on('interactionCreate', async (interaction) => {
         .setLabel('Cancel')
         .setStyle(ButtonStyle.Secondary);
 
+    const close = new ButtonBuilder()
+        .setCustomId('closeButton')
+        .setLabel('close ticket')
+        .setStyle(ButtonStyle.Danger);
+
     if (interaction.isButton()) {
         const intMessage = interaction.channel.messages.cache.get(interaction.message.id);
         if (interaction.component.customId == 'confirmNuke') {
@@ -147,11 +153,62 @@ client.on('interactionCreate', async (interaction) => {
                 console.log(`error cancelling interaction - ${error}`);
             }
         }
-        if (interaction.component.customId == 'purchaseButtonId') {
-
+        if (interaction.component.customId == 'closeButton') {
+            try {
+                interaction.channel.delete();
+            } catch (err) {
+                console.log('error when handling close button - ' + err);
+            }
         }
-        if (interaction.component.customId == 'requestButtuonId') {
-
+        if (interaction.component.customId == 'purchaseButtonId') {
+            try {
+                if (interaction.guild.channels.cache.find(channel => channel.name == `ticket-${interaction.member.displayName}`)) {
+                    return interaction.reply({ content: 'you already have an open ticket', ephemeral: true });
+                }
+                close.setEmoji('💵')
+                const closeRow = new ActionRowBuilder()
+                    .addComponents(close);
+                const ticketChannel = interaction.guild.channels.create({
+                    type: ChannelType.GuildText, name: `ticket-${interaction.member.displayName}`, permissionOverwrites: [
+                        {
+                            id: interaction.guild.id,
+                            deny: [PermissionsBitField.Flags.ViewChannel]
+                        },
+                        {
+                            id: interaction.member.id,
+                            allow: [PermissionsBitField.Flags.ViewChannel],
+                        },
+                    ],
+                }).then(interaction.reply({ content: `ticket created`, ephemeral: true }));
+                (await (await ticketChannel).send({ content: 'please wait patiently for the developer to respond', components: [closeRow] }));
+            } catch (err) {
+                console.log('error handling purchase ticket button - ' + err);
+            }
+        }
+        if (interaction.component.customId == 'requestButtonId') {
+            try {
+                if (interaction.guild.channels.cache.find(channel => channel.name == `ticket-${interaction.member.displayName}`)) {
+                    return interaction.reply({ content: 'you already have an open ticket', ephemeral: true });
+                }
+                close.setEmoji('💎')
+                const closeRow = new ActionRowBuilder()
+                    .addComponents(close);
+                const ticketChannel = interaction.guild.channels.create({
+                    type: ChannelType.GuildText, name: `ticket-${interaction.member.displayName}`, permissionOverwrites: [
+                        {
+                            id: interaction.guild.id,
+                            deny: [PermissionsBitField.Flags.ViewChannel]
+                        },
+                        {
+                            id: interaction.member.id,
+                            allow: [PermissionsBitField.Flags.ViewChannel],
+                        },
+                    ],
+                }).then(interaction.reply({ content: `ticket created`, ephemeral: true }));
+                (await (await ticketChannel).send({ content: 'please wait patiently for the developer to respond in the meantime let me know what it is you are requesting', components: [closeRow] }));
+            } catch (err) {
+                console.log('error handling request commission button - ' + err);
+            }
         }
     }
 
@@ -159,7 +216,6 @@ client.on('interactionCreate', async (interaction) => {
         try {
             const nukeRow = new ActionRowBuilder()
                 .addComponents(cancel, confirm);
-            76
             await interaction.reply({ content: `Are you sure you want to nuke this channel?`, components: [nukeRow] });
         } catch (error) {
             console.log('error handling /nuke - ' + error)
@@ -688,9 +744,9 @@ client.on('messageCreate', async (message) => {
             const ticketEmbed = new EmbedBuilder()
                 .setColor(config.color)
                 .setTitle('Create a ticket')
-                .setDescription(`Create a ticket below for new purchases or if you have Cash and would like to discuss with the developer a **PAID** commission to add a feature to the bot.\n\nIf you are purchasing Cashn, make sure you have completed your payment first before creating a ticket.\n\nPlease not that we do not currently do transfers to new servers.`)
-            
-            message.channel.send({ embeds: [ticketEmbed], components: [ticketRow]});
+                .setDescription(`Create a ticket below for new purchases or if you have Cash and would like to discuss with the developer a **PAID** commission to add a feature to the bot.\n\nIf you are purchasing Cash, make sure you have completed your payment first before creating a ticket.\n\nPlease note that we do not currently do transfers to new servers.`)
+
+            message.channel.send({ embeds: [ticketEmbed], components: [ticketRow] });
             break;
 
         case 'vanityembed':
